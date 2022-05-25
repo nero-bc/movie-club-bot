@@ -148,8 +148,8 @@ class Command(BaseCommand):
         unwatched = sorted(MovieSuggestion.objects.filter(watched=False), key=lambda x: -x.get_score)[0:3]
         msg = "Top 3 films to watch:\n\n"
         for m in unwatched:
-            msg += "{film.title} ({film.year}), {film.rating}⭐️ {film.runtime}⏰\n"
-            msg += "  {film.genre}, {''.join(film.buffs.all())}\n\n"
+            msg += f"{film.title} ({film.year}), {film.rating}⭐️ {film.runtime}⏰\n"
+            msg += f"  {film.genre}, {''.join(film.buffs.all())}\n\n"
 
         bot.send_message(message.chat.id, msg)
 
