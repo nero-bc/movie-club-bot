@@ -42,7 +42,7 @@ class Command(BaseCommand):
         else:
             url = f"https://github.com/hexylena/emc-movie-club-bot/"
 
-        bot.reply_to(message, f"{org} | {ip} | {url}")
+        bot.reply_to(message, f"{org} | {ip} | {url} | {message.chat.type}")
 
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
