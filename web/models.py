@@ -36,6 +36,16 @@ class MovieSuggestion(models.Model):
         return (self.expressed_interest.count() + 1) * \
             (runtime_debuff + rock+  cage + vote_adj)
 
+    @property
+    def get_rating(self):
+        nums = CriticRating.objects.filter(film=self)
+        nums = [x.score for x in nums]
+
+        if len(nums) == 0:
+            return 0
+
+        return sum(nums) / len(nums)
+
     def __str__(self):
         return f"{self.title} ({self.year})"
 

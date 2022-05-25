@@ -16,12 +16,36 @@ Movie List
 		</tr>
 	</thead>
 	<tbody>
-		{% for m in movies %}
+		{% for m in unwatched %}
 		<tr>
 			<td>{{ m.imdb_id  }}</td>
 			<td>{{ m.title  }}</td>
-			<td>{{ m.suggested_by }}</td>
+			<td>{{ m.suggested_by.first_name }}</td>
 			<td>{{ m.get_score }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h1>Watched</h1>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>IMDB Link</th>
+			<th>Title</th>
+			<th>Suggested By</th>
+			<th>Score</th>
+			<th>Avg Rating</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for m in watched %}
+		<tr>
+			<td>{{ m.imdb_id  }}</td>
+			<td>{{ m.title  }}</td>
+			<td>{{ m.suggested_by.first_name }}</td>
+			<td>{{ m.get_score }}</td>
+			<td>{{ m.get_rating }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
