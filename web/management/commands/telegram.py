@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 import traceback
-# from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission
 from django.db.utils import ProgrammingError
 import uuid
 
@@ -19,9 +19,9 @@ import time
 
 bot = telebot.TeleBot(os.environ['TELOXIDE_TOKEN'])
 imdb_link = re.compile("imdb.com/title/(tt[0-9]*)/?")
-# MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
-# MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
-# MOVIE_UPDATE = Permission.objects.get(name='Can update movie suggestion')
+MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
+MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
+MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 
 class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
@@ -70,11 +70,28 @@ class Command(BaseCommand):
             # Make our users staff so they can access the interface.
             user.is_staff = True
             # Add permissions
-            # user.user_permissions.add(MOVIE_VIEW)
-            # user.user_permissions.add(MOVIE_ADD)
-            # user.user_permissions.add(MOVIE_UPDATE)
+            user.user_permissions.add(MOVIE_VIEW)
+            user.user_permissions.add(MOVIE_ADD)
+            user.user_permissions.add(MOVIE_UPDATE)
             user.save()
             return user
+
+    def change_password(self, message):
+        # Only private chats are permitted
+        if message.chat.type != 'private':
+            return
+
+        # It must be the correct user (I hope.)
+        user = self.find_user(message.from_user.username)
+
+        # Update their password
+        newpassword = str(uuid.uuid4())
+        user.set_password(newpassword)
+        user.save()
+
+        # Send them the password
+        bot.reply_to(message, f"Your new password is: {newpassword}. Go change it at https://movie-club-bot.app.galaxians.org/admin/password_change/")
+
 
     def process_imdb_links(self, message):
         new_count = 0
@@ -111,6 +128,25 @@ class Command(BaseCommand):
                 bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user.username}.")
                 new_count += 1
 
+
+    def command_dispatch(self, message):
+        if message.text.startswith('/start') or message.text.startswith('/help'):
+            # Do something with the message
+            bot.reply_to(message, 'Howdy, how ya doin\n\n' + '\n'.join([
+                '/debug Show some debug info',
+                '/passwd Change your password',
+                '/countdown [number] Start a countdown',
+                '[imdb link] - add to the database',
+            ]))
+        elif message.text.startswith('/debug'):
+            self.locate(message)
+        elif message.text.startswith('/passwd'):
+            self.change_password(message)
+        elif message.text.startswith('/countdown'):
+            self.countdown(message.chat.id, message.text.split())
+        else:
+            self.process_imdb_links(message)
+
     def handle(self, *args, **options):
         def handle_messages(messages):
             for message in messages:
@@ -119,22 +155,13 @@ class Command(BaseCommand):
                     continue
 
                 try:
-                    if message.text.startswith('/start') or message.text.startswith('/help'):
-                        # Do something with the message
-                        bot.reply_to(message, 'Howdy, how ya doin')
-                    elif message.text.startswith('/debug'):
-                        self.locate(message)
-                    elif message.text.startswith('/countdown'):
-                        self.countdown(message.chat.id, message.text.split())
-                    else:
-                        self.process_imdb_links(message)
+                    self.command_dispatch(message)
                 except Exception as e:
                     error_id = str(uuid.uuid4())
                     print(e)
                     print(error_id)
                     traceback.print_exc()
                     bot.send_message(message.chat.id, f"⚠️ oopsie whoopsie something went fucky wucky. @hexylena fix it. {error_id}")
-
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
