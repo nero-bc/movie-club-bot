@@ -12,6 +12,7 @@ Movie List
 			<th>Title</th>
 			<th>Suggested By</th>
 			<th>Score</th>
+			<th>Buffs</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -24,6 +25,7 @@ Movie List
 			</td>
 			<td>{{ m.suggested_by.first_name }}</td>
 			<td>{{ m.get_score }}</td>
+			<td>{{ m.get_buffs }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>

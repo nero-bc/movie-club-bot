@@ -6,6 +6,17 @@ from django.contrib.auth.models import User
 User.__str__ = lambda self: self.first_name if self.first_name else self.username
 
 
+class Buff(models.Model):
+    short = models.CharField(max_length=8)
+    name = models.TextField()
+    value = models.FloatField()
+
+    def __str__(self):
+        if self.value < 0:
+            return f'-{self.short}'
+        else:
+            return f'+{self.short}'
+
 # Create your models here.
 class MovieSuggestion(models.Model):
     imdb_id = models.CharField(max_length=64, primary_key=True)
@@ -25,9 +36,8 @@ class MovieSuggestion(models.Model):
     watched_date = models.DateTimeField(null=True, blank=True)
 
     # Scoring
-    cage_factor = models.BooleanField()
-    rock_factor = models.BooleanField()
     expressed_interest = models.ManyToManyField(User, blank=True)
+    buffs = models.ManyToManyField(Buff, blank=True)
 
     suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='suggestion')
 
@@ -35,12 +45,11 @@ class MovieSuggestion(models.Model):
     def get_score(self):
         year_debuff = (self.year - 2022) / 6
         runtime_debuff = abs(self.runtime - 90) / 10
-        cage = 20 if self.cage_factor else 0
-        rock = 20 if self.rock_factor else 0
+        buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
         vote_adj = math.log10(self.ratings) * self.rating + year_debuff
 
         return (self.expressed_interest.count() + 1) * \
-            (runtime_debuff + rock+  cage + vote_adj)
+            (runtime_debuff + buff_score + vote_adj)
 
     @property
     def get_rating(self):
@@ -51,6 +60,11 @@ class MovieSuggestion(models.Model):
             return 0
 
         return sum(nums) / len(nums)
+
+    @property
+    def get_buffs(self):
+        b = self.buffs.all()
+        return "".join(map(str, b))
 
     def __str__(self):
         return f"{self.title} ({self.year})"
