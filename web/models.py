@@ -2,6 +2,9 @@ from django.db import models
 import math
 from django.contrib.auth.models import User
 
+# Monkey patch, yikes.
+User.__str__ = lambda self: self.first_name if self.first_name else self.username
+
 
 # Create your models here.
 class MovieSuggestion(models.Model):

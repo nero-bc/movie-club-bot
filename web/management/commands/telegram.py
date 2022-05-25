@@ -33,21 +33,31 @@ def handle_user_response(response):
     user_id = response.user.id
     option_ids = response.option_ids
     poll_id = response.poll_id
-    critic_rating = KNOWN_POLLS[poll_id]['o'][option_ids[0]]
-
-    print(user_id, poll_id, option_ids, KNOWN_POLLS[poll_id])
     user = find_user(response.user)
-    try:
-        cr = CriticRating.objects.get(user=user, film=KNOWN_POLLS[poll_id]['f'])
-        cr.score = critic_rating
-        cr.save()
-    except CriticRating.DoesNotExist:
-        cr = CriticRating.objects.create(
-            user=user,
-            film=KNOWN_POLLS[poll_id]['f'],
-            score=critic_rating,
-        )
-        cr.save()
+    film = KNOWN_POLLS[poll_id]['f']
+
+    if KNOWN_POLLS[poll_id]['t'] == 'rate':
+        critic_rating = KNOWN_POLLS[poll_id]['o'][option_ids[0]]
+
+        print(user_id, poll_id, option_ids, KNOWN_POLLS[poll_id])
+        try:
+            cr = CriticRating.objects.get(user=user, film=film)
+            cr.score = critic_rating
+            cr.save()
+        except CriticRating.DoesNotExist:
+            cr = CriticRating.objects.create(
+                user=user,
+                film=film,
+                score=critic_rating,
+            )
+            cr.save()
+    elif KNOWN_POLLS[poll_id]['t'] == 'interest':
+        # Only care if they're interested
+        if option_ids[0] != 0:
+            return
+
+        film.expressed_interest.add(user)
+        film.save()
 
 
 bot.poll_answer_handler(func=lambda call: True)(handle_user_response)
@@ -168,6 +178,8 @@ class Command(BaseCommand):
                 bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user.username}.")
                 new_count += 1
 
+                self.send_interest_poll(message, movie)
+
     def command_dispatch(self, message):
         if message.chat.id != -627602564:
             print(message)
@@ -175,9 +187,10 @@ class Command(BaseCommand):
         if message.text.startswith('/start') or message.text.startswith('/help'):
             # Do something with the message
             bot.reply_to(message, 'Howdy, how ya doin\n\n' + '\n'.join([
-                '/debug Show some debug info',
-                '/passwd Change your password',
-                '/countdown [number] Start a countdown',
+                '/debug - Show some debug info',
+                '/passwd - Change your password (DM only.)',
+                '/countdown [number] - Start a countdown',
+                '/rate tt<id> - Ask group to rate the film',
                 '[imdb link] - add to the database',
             ]))
         elif message.text.startswith('/debug'):
@@ -190,6 +203,18 @@ class Command(BaseCommand):
             self.send_rate_poll(message)
         else:
             self.process_imdb_links(message)
+
+    def send_interest_poll(self, message, film):
+        question = f'Do you wanna see this?'
+        options = ['💯', 'meh']
+
+        r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
+        KNOWN_POLLS[r.poll.id] = {
+            'f': film,
+            'q': question,
+            'o': options,
+            't': 'interest',
+        }
 
     def send_rate_poll(self, message: types.Message):
         parts = message.text.split()
@@ -207,13 +232,14 @@ class Command(BaseCommand):
         film.save()
 
         question = f'What did you think of {film.title} ({film.year})? Give it a rating.'
-        options = ['0', '1', '2', '3', '4', '5']
+        options = ['0', '⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
         KNOWN_POLLS[r.poll.id] = {
             'f': film,
             'q': question,
             'o': options,
+            't': 'rate',
         }
 
 
