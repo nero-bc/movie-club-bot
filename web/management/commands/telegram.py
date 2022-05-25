@@ -11,7 +11,6 @@ import os
 import re
 import requests
 import telebot
-from telebot import formatting
 import time
 
 bot = telebot.TeleBot(os.environ['TELOXIDE_TOKEN'])
@@ -61,19 +60,7 @@ class Command(BaseCommand):
                     time.sleep(1)
 
                 movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
-                bot.send_message(message.chat.id,
-                    formatting.format_text(
-                        f"{m} looks like a new movie, added it to the database.",
-                        "",
-                        formatting.mbold(movie_details['name']),
-                        "",
-                        movie_details['description'],
-                        "",
-                        " | ".join(movie_details['genre']),
-                        separator="\n", # separator separates all strings
-                    ),
-                    parse_mode='MarkdownV2'
-                )
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
 
                 movie = MovieSuggestion.objects.create(
                     imdb_id=m,
