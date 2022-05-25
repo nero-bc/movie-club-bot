@@ -30,7 +30,16 @@ class Command(BaseCommand):
                         time.sleep(1)
                 else:
                     for m in imdb_link.findall(message.text):
-                        bot.send_message(message.chat.id, f"Found an IMDB link: {m}")
+                        try:
+                            movie = MovieSuggestion.objects.get(imdb_id=m)
+                            bot.send_message(message.chat.id, f"{m} known.")
+                        except MovieSuggestion.DoesNotExist:
+                            print("New movie! Adding it to the database")
+                            movie = MovieSuggestion.objects.create(
+                                imdb_id=m,
+                            )
+                            movie.save()
+                            bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.")
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
