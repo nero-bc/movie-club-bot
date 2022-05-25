@@ -72,7 +72,7 @@ class Command(BaseCommand):
                     watched=False,
                     cage_factor=False,
                     rock_factor=False,
-                    expressed_interest=[],
+                    # expressed_interest=[],
                 )
                 movie.save()
                 bot.send_message(message.chat.id, f"{m} looks like a new movie, done.")
