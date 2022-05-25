@@ -146,7 +146,7 @@ class Command(BaseCommand):
     def process_imdb_links(self, message):
         new_count = 0
         for m in imdb_link.findall(message.text):
-            bot.send_message(message.chat.id, f"Received {m}")
+            # bot.send_message(message.chat.id, f"Received {m}")
             try:
                 movie = MovieSuggestion.objects.get(imdb_id=m)
                 bot.send_message(message.chat.id, f"{m} known.")
@@ -159,7 +159,7 @@ class Command(BaseCommand):
 
                 # Process details
                 movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
 
                 movie = MovieSuggestion.objects.create(
                     imdb_id=m,
@@ -176,7 +176,7 @@ class Command(BaseCommand):
                     # expressed_interest=[],
                 )
                 movie.save()
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user}.")
+                # bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user}.")
                 new_count += 1
 
                 self.send_interest_poll(message, movie)
