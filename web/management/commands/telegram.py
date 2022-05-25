@@ -203,6 +203,9 @@ class Command(BaseCommand):
             bot.send_message(message.chat.id, "Unknown film")
             return
 
+        film.watched = True
+        film.save()
+
         question = f'What did you think of {film.title} ({film.year})? Give it a rating.'
         options = ['0', '1', '2', '3', '4', '5']
 

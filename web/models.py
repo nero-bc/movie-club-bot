@@ -21,7 +21,7 @@ class MovieSuggestion(models.Model):
     # Scoring
     cage_factor = models.BooleanField()
     rock_factor = models.BooleanField()
-    expressed_interest = models.ManyToManyField(User)
+    expressed_interest = models.ManyToManyField(User, blank=True)
 
     suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='suggestion')
 
