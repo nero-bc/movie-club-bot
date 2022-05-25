@@ -60,7 +60,7 @@ class Command(BaseCommand):
                     time.sleep(1)
 
                 movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{movie_details['genre'].join(' ')}")
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
 
                 movie = MovieSuggestion.objects.create(
                     imdb_id=m,
