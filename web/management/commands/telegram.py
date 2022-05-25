@@ -35,7 +35,14 @@ class Command(BaseCommand):
 
     def locate(self, message):
         r = requests.get('https://ipinfo.io/json').json()
-        bot.reply_to(message, r['org'])
+        org = r['org']
+        ip = r['ip']
+        if 'GIT_REV' in os.environ:
+            url = f"https://github.com/hexylena/emc-movie-club-bot/commit/{os.environ['GIT_REV']}"
+        else:
+            url = f"https://github.com/hexylena/emc-movie-club-bot/"
+
+        bot.reply_to(message, f"{org} | {ip} | {url}")
 
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
@@ -115,7 +122,7 @@ class Command(BaseCommand):
                     if message.text.startswith('/start') or message.text.startswith('/help'):
                         # Do something with the message
                         bot.reply_to(message, 'Howdy, how ya doin')
-                    elif message.text.startswith('/locate'):
+                    elif message.text.startswith('/debug'):
                         self.locate(message)
                     elif message.text.startswith('/countdown'):
                         self.countdown(message.chat.id, message.text.split())
