@@ -69,8 +69,8 @@ def find_user(passed_user):
         ret = user
 
     if passed_user:
-        ret.first_name = passed_user.first_name
-        ret.last_name = passed_user.last_name
+        ret.first_name = passed_user.get('first_name', '')
+        ret.last_name = passed_user.get('last_name', '')
         ret.save()
 
     return ret
