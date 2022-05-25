@@ -5,7 +5,7 @@ from django.contrib.auth.models import Permission
 from django.db.utils import ProgrammingError
 import uuid
 
-from web.models import MovieSuggestion
+from web.models import MovieSuggestion, CriticRating
 
 import isodate
 from bs4 import BeautifulSoup
@@ -22,6 +22,60 @@ imdb_link = re.compile("imdb.com/title/(tt[0-9]*)/?")
 MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
+
+from telebot.custom_filters import TextFilter, TextMatchFilter, IsReplyFilter
+from telebot import TeleBot, types
+
+
+# Poll Handling
+KNOWN_POLLS = {}
+def handle_user_response(response):
+    user_id = response.user.id
+    option_ids = response.option_ids
+    poll_id = response.poll_id
+    critic_rating = KNOWN_POLLS[poll_id]['o'][option_ids[0]]
+
+    print(user_id, poll_id, option_ids, KNOWN_POLLS[poll_id])
+    user = find_user(response.user)
+    try:
+        cr = CriticRating.objects.get(user=user, film=KNOWN_POLLS[poll_id]['f'])
+        cr.score = critic_rating
+        cr.save()
+    except CriticRating.DoesNotExist:
+        cr = CriticRating.objects.create(
+            user=user,
+            film=KNOWN_POLLS[poll_id]['f'],
+            score=critic_rating,
+        )
+        cr.save()
+
+
+bot.poll_answer_handler(func=lambda call: True)(handle_user_response)
+
+
+
+def find_user(passed_user):
+    try:
+        ret = User.objects.get(username=passed_user.id)
+    except User.DoesNotExist:
+        user = User.objects.create_user(passed_user.id, "", str(uuid.uuid4()))
+        # Make our users staff so they can access the interface.
+        user.is_staff = True
+        # Add permissions
+        user.user_permissions.add(MOVIE_VIEW)
+        user.user_permissions.add(MOVIE_ADD)
+        user.user_permissions.add(MOVIE_UPDATE)
+        user.save()
+        ret = user
+
+    if passed_user:
+        ret.first_name = passed_user.first_name
+        ret.last_name = passed_user.last_name
+        ret.save()
+
+    return ret
+
+
 
 class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
@@ -62,27 +116,13 @@ class Command(BaseCommand):
             bot.send_message(chat_id, str(i))
             time.sleep(1)
 
-    def find_user(self, username):
-        try:
-            return User.objects.get(username=username)
-        except User.DoesNotExist:
-            user = User.objects.create_user(username, "", str(uuid.uuid4()))
-            # Make our users staff so they can access the interface.
-            user.is_staff = True
-            # Add permissions
-            user.user_permissions.add(MOVIE_VIEW)
-            user.user_permissions.add(MOVIE_ADD)
-            user.user_permissions.add(MOVIE_UPDATE)
-            user.save()
-            return user
-
     def change_password(self, message):
         # Only private chats are permitted
         if message.chat.type != 'private':
             return
 
         # It must be the correct user (I hope.)
-        user = self.find_user(message.from_user.username)
+        user = find_user(message.from_user)
 
         # Update their password
         newpassword = str(uuid.uuid4())
@@ -104,7 +144,7 @@ class Command(BaseCommand):
                     time.sleep(1)
 
                 # Obtain user
-                user = self.find_user(message.from_user.username)
+                user = find_user(message.from_user)
 
                 # Process details
                 movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
@@ -128,8 +168,10 @@ class Command(BaseCommand):
                 bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user.username}.")
                 new_count += 1
 
-
     def command_dispatch(self, message):
+        if message.chat.id != -627602564:
+            print(message)
+
         if message.text.startswith('/start') or message.text.startswith('/help'):
             # Do something with the message
             bot.reply_to(message, 'Howdy, how ya doin\n\n' + '\n'.join([
@@ -144,8 +186,33 @@ class Command(BaseCommand):
             self.change_password(message)
         elif message.text.startswith('/countdown'):
             self.countdown(message.chat.id, message.text.split())
+        elif message.text.startswith('/rate'):
+            self.send_rate_poll(message)
         else:
             self.process_imdb_links(message)
+
+    def send_rate_poll(self, message: types.Message):
+        parts = message.text.split()
+        if len(parts) != 2:
+            bot.send_message(message.chat.id, "Error, use /rate tt<id>")
+            return
+
+        try:
+            film = MovieSuggestion.objects.get(imdb_id=parts[1])
+        except:
+            bot.send_message(message.chat.id, "Unknown film")
+            return
+
+        question = f'What did you think of {film.title} ({film.year})? Give it a rating.'
+        options = ['0', '1', '2', '3', '4', '5']
+
+        r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
+        KNOWN_POLLS[r.poll.id] = {
+            'f': film,
+            'q': question,
+            'o': options,
+        }
+
 
     def handle(self, *args, **options):
         def handle_messages(messages):
