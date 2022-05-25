@@ -97,6 +97,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def handle_messages(messages):
             for message in messages:
+                # Skip non-text messages
+                if message.text is None:
+                    continue
+
                 try:
                     if message.text.startswith('/start') or message.text.startswith('/help'):
                         # Do something with the message
