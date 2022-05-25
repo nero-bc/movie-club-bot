@@ -25,7 +25,13 @@ class Command(BaseCommand):
                     r = requests.get('https://ipinfo.io/json').json()
                     bot.reply_to(message, r['org'])
                 elif message.text.startswith('/countdown'):
-                    for i in [5, 4, 3, 2, 1, 'Go! 🎉']:
+                    if len(message.text.split()) == 2:
+                        length = int(message.text.split()[1])
+                    else:
+                        length = 5
+
+                    times = ['Go! 🎉'] + list(range(1, length + 1))
+                    for i in times[::-1]:
                         bot.send_message(message.chat.id, str(i))
                         time.sleep(1)
                 else:
