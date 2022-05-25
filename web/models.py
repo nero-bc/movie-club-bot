@@ -13,6 +13,7 @@ class MovieSuggestion(models.Model):
     rating = models.FloatField()
     ratings = models.IntegerField()
     runtime = models.IntegerField()
+    genre = models.TextField(null=True, blank=True)
 
     # Our info
     watched = models.BooleanField()

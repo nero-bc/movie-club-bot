@@ -117,6 +117,7 @@ class Command(BaseCommand):
                     rating=movie_details['aggregateRating']['ratingValue'],
                     ratings=movie_details['aggregateRating']['ratingCount'],
                     runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
+                    genre=movie_details['genre'],
                     watched=False,
                     cage_factor=False,
                     rock_factor=False,
