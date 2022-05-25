@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 import traceback
+from django.contrib.auth.models import Permission
 from django.db.utils import ProgrammingError
 import uuid
 
@@ -18,6 +19,9 @@ import time
 
 bot = telebot.TeleBot(os.environ['TELOXIDE_TOKEN'])
 imdb_link = re.compile("imdb.com/title/(tt[0-9]*)/?")
+MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
+MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
+MOVIE_UPDATE = Permission.objects.get(name='Can update movie suggestion')
 
 class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
@@ -55,7 +59,13 @@ class Command(BaseCommand):
         try:
             return User.objects.get(username=username)
         except User.DoesNotExist:
-            user = User.objects.create_user(username, "", "PaSSw0rd!")
+            user = User.objects.create_user(username, "", str(uuid.uuid4()))
+            # Make our users staff so they can access the interface.
+            user.is_staff = True
+            # Add permissions
+            user.user_permissions.add(MOVIE_VIEW)
+            user.user_permissions.add(MOVIE_ADD)
+            user.user_permissions.add(MOVIE_UPDATE)
             user.save()
             return user
 
