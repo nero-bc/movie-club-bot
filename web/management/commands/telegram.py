@@ -26,6 +26,57 @@ class Command(BaseCommand):
         soup = BeautifulSoup(req.text, parser)
         return json.loads("".join(soup.find("script", {"type":"application/ld+json"}).contents))
 
+    def locate(self, message):
+        r = requests.get('https://ipinfo.io/json').json()
+        bot.reply_to(message, r['org'])
+
+    def countdown(self, chat_id, message_parts):
+        if len(message_parts) == 2:
+            try:
+                length = int(message_parts[1])
+                if length > 10:
+                    length = 10
+                elif length < 1:
+                    length = 1
+            except:
+                length = 5
+        else:
+            length = 5
+
+        times = ['Go! 🎉'] + list(range(1, length + 1))
+        for i in times[::-1]:
+            bot.send_message(chat_id, str(i))
+            time.sleep(1)
+
+    def process_imdb_links(self, message):
+        new_count = 0
+        for m in imdb_link.findall(message.text):
+            bot.send_message(message.chat.id, f"Received {m}")
+            try:
+                movie = MovieSuggestion.objects.get(imdb_id=m)
+                bot.send_message(message.chat.id, f"{m} known.")
+            except MovieSuggestion.DoesNotExist:
+                if new_count > 0:
+                    time.sleep(1)
+
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.")
+                movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
+                movie = MovieSuggestion.objects.create(
+                    imdb_id=m,
+                    title=movie_details['name'],
+                    year=int(movie_details['datePublished'].split('-')[0]),
+                    rating=movie_details['aggregateRating']['ratingValue'],
+                    ratings=movie_details['aggregateRating']['ratingCount'],
+                    runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
+                    watched=False,
+                    cage_factor=False,
+                    rock_factor=False,
+                    expressed_interest=[],
+                )
+                movie.save()
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, done.")
+                new_count += 1
+
     def handle(self, *args, **options):
         def handle_messages(messages):
             for message in messages:
@@ -33,50 +84,11 @@ class Command(BaseCommand):
                     # Do something with the message
                     bot.reply_to(message, 'Howdy, how ya doin')
                 elif message.text.startswith('/locate'):
-                    r = requests.get('https://ipinfo.io/json').json()
-                    bot.reply_to(message, r['org'])
+                    self.locate(message)
                 elif message.text.startswith('/countdown'):
-                    if len(message.text.split()) == 2:
-                        length = int(message.text.split()[1])
-                        if length > 10:
-                            length = 10
-                        elif length < 1:
-                            length = 1
-                    else:
-                        length = 5
-
-                    times = ['Go! 🎉'] + list(range(1, length + 1))
-                    for i in times[::-1]:
-                        bot.send_message(message.chat.id, str(i))
-                        time.sleep(1)
+                    self.countdown(message.chat.id, message.text.split())
                 else:
-                    new_count = 0
-                    for m in imdb_link.findall(message.text):
-                        bot.send_message(message.chat.id, f"Received {m}")
-                        try:
-                            movie = MovieSuggestion.objects.get(imdb_id=m)
-                            bot.send_message(message.chat.id, f"{m} known.")
-                        except MovieSuggestion.DoesNotExist:
-                            if new_count > 0:
-                                time.sleep(1)
-
-                            bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.")
-                            movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
-                            movie = MovieSuggestion.objects.create(
-                                imdb_id=m,
-                                title=movie_details['name'],
-                                year=int(movie_details['datePublished'].split('-')[0]),
-                                rating=movie_details['aggregateRating']['ratingValue'],
-                                ratings=movie_details['aggregateRating']['ratingCount'],
-                                runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
-                                watched=False,
-                                cage_factor=False,
-                                rock_factor=False,
-                                expressed_interest=[],
-                            )
-                            movie.save()
-                            bot.send_message(message.chat.id, f"{m} looks like a new movie, done.")
-                            new_count += 1
+                    self.process_imdb_links(message)
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
