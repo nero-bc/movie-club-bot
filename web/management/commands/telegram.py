@@ -59,8 +59,9 @@ class Command(BaseCommand):
                 if new_count > 0:
                     time.sleep(1)
 
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.")
                 movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{movie_details['genre'].join(' ')}")
+
                 movie = MovieSuggestion.objects.create(
                     imdb_id=m,
                     title=movie_details['name'],
