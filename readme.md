@@ -2,11 +2,14 @@
 
 TODO:
 
-- vote on films, record reactjis
 - generate suggestions for what to watch, on demand
-- `/help`
-- generating better passwords (D:), giving them to the users via DMs only.
 - restricting the users?
+- does the dog die integration
+
+Done
+
 - https
+- `/help`
+- vote on films, record reactjis
+- generating better passwords (D:), giving them to the users via DMs only.
 - staff permission
-- readiness check ⇒ autostart
