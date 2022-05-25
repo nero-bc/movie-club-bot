@@ -50,12 +50,17 @@ class Command(BaseCommand):
                         bot.send_message(message.chat.id, str(i))
                         time.sleep(1)
                 else:
+                    new_count = 0
                     for m in imdb_link.findall(message.text):
+                        bot.send_message(message.chat.id, f"Received {m}")
                         try:
                             movie = MovieSuggestion.objects.get(imdb_id=m)
                             bot.send_message(message.chat.id, f"{m} known.")
                         except MovieSuggestion.DoesNotExist:
-                            print("New movie! Adding it to the database")
+                            if new_count > 0:
+                                time.sleep(1)
+
+                            bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.")
                             movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
                             movie = MovieSuggestion.objects.create(
                                 imdb_id=m,
@@ -66,9 +71,8 @@ class Command(BaseCommand):
                                 runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
                             )
                             movie.save()
-                            bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.")
-
-                            time.sleep(1)
+                            bot.send_message(message.chat.id, f"{m} looks like a new movie, done.")
+                            new_count += 1
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
