@@ -9,3 +9,4 @@ TODO:
 - restricting the users?
 - https
 - staff permission
+- readiness check ⇒ autostart
