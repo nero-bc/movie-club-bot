@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Movie List
+{% endblock %}
+
+{% block content %}
+<h1>Movie List</h1>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>IMDB Link</th>
+			<th>Title</th>
+			<th>Score</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for m in movies %}
+		<tr>
+			<td>{{ m.imdb_id  }}</td>
+			<td>{{ m.title  }}</td>
+			<td>{{ m.get_score }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}
