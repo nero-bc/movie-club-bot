@@ -69,6 +69,10 @@ class Command(BaseCommand):
                                 rating=movie_details['aggregateRating']['ratingValue'],
                                 ratings=movie_details['aggregateRating']['ratingCount'],
                                 runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
+                                watched=False,
+                                cage_factor=False,
+                                rock_factor=False,
+                                expressed_interest=[],
                             )
                             movie.save()
                             bot.send_message(message.chat.id, f"{m} looks like a new movie, done.")
