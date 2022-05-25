@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
+from django.utils import timezone
 import traceback
 from django.contrib.auth.models import Permission
 from django.db.utils import ProgrammingError
@@ -205,7 +206,7 @@ class Command(BaseCommand):
             self.process_imdb_links(message)
 
     def send_interest_poll(self, message, film):
-        question = f'Do you wanna see this?'
+        question = f'Do you wanna see {film}?'
         options = ['💯', 'meh']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
@@ -229,9 +230,10 @@ class Command(BaseCommand):
             return
 
         film.watched = True
+        film.watched_date = timezone.now()
         film.save()
 
-        question = f'What did you think of {film.title} ({film.year})? Give it a rating.'
+        question = f'What did you think of {film}? Give it a rating.'
         options = ['0', '⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)

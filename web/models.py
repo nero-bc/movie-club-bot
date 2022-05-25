@@ -18,8 +18,11 @@ class MovieSuggestion(models.Model):
     runtime = models.IntegerField()
     genre = models.TextField(null=True, blank=True)
 
+    added = models.DateTimeField(auto_now_add=True)
+
     # Our info
     watched = models.BooleanField()
+    watched_date = models.DateTimeField(null=True, blank=True)
 
     # Scoring
     cage_factor = models.BooleanField()
