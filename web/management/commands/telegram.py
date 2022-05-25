@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
+import traceback
 from django.db.utils import ProgrammingError
+import uuid
 
 from web.models import MovieSuggestion
 
@@ -81,15 +83,23 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def handle_messages(messages):
             for message in messages:
-                if message.text.startswith('/start') or message.text.startswith('/help'):
-                    # Do something with the message
-                    bot.reply_to(message, 'Howdy, how ya doin')
-                elif message.text.startswith('/locate'):
-                    self.locate(message)
-                elif message.text.startswith('/countdown'):
-                    self.countdown(message.chat.id, message.text.split())
-                else:
-                    self.process_imdb_links(message)
+                try:
+                    if message.text.startswith('/start') or message.text.startswith('/help'):
+                        # Do something with the message
+                        bot.reply_to(message, 'Howdy, how ya doin')
+                    elif message.text.startswith('/locate'):
+                        self.locate(message)
+                    elif message.text.startswith('/countdown'):
+                        self.countdown(message.chat.id, message.text.split())
+                    else:
+                        self.process_imdb_links(message)
+                except Exception as e:
+                    error_id = str(uuid.uuid4())
+                    print(e)
+                    print(error_id)
+                    traceback.print_exc()
+                    bot.send_message(message.chat.id, f"⚠️ oopsie whoopsie something went fucky wucky. @hexylena fix it. {error_id}")
+
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
