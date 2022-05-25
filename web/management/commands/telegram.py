@@ -176,7 +176,7 @@ class Command(BaseCommand):
                     # expressed_interest=[],
                 )
                 movie.save()
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user.username}.")
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user}.")
                 new_count += 1
 
                 self.send_interest_poll(message, movie)
