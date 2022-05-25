@@ -143,6 +143,17 @@ class Command(BaseCommand):
         # Send them the password
         bot.reply_to(message, f"Username: {user.username}\npassword: {newpassword}\n\n Go change it at https://movie-club-bot.app.galaxians.org/admin/password_change/")
 
+
+    def suggest(self, message):
+        unwatched = sorted(MovieSuggestion.objects.filter(watched=False), key=lambda x: -x.get_score)[0:3]
+        msg = "Top 3 films to watch:\n\n"
+        for m in unwatched:
+            msg += "{film.title} ({film.year}), {film.rating}⭐️ {film.runtime}⏰\n"
+            msg += "  {film.genre}, {''.join(film.buffs.all())}\n\n"
+
+        bot.send_message(message.chat.id, msg)
+
+
     def process_imdb_links(self, message):
         new_count = 0
         for m in imdb_link.findall(message.text):
@@ -192,6 +203,7 @@ class Command(BaseCommand):
                 '/passwd - Change your password (DM only.)',
                 '/countdown [number] - Start a countdown',
                 '/rate tt<id> - Ask group to rate the film',
+                '/suggest - Make suggestions for what to watch',
                 '[imdb link] - add to the database',
             ]))
         elif message.text.startswith('/debug'):
@@ -202,6 +214,8 @@ class Command(BaseCommand):
             self.countdown(message.chat.id, message.text.split())
         elif message.text.startswith('/rate'):
             self.send_rate_poll(message)
+        elif message.text.startswith('/suggest'):
+            self.suggest(message)
         else:
             self.process_imdb_links(message)
 
