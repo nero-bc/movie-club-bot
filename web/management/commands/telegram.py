@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.contrib.auth.models import User
 import traceback
 from django.db.utils import ProgrammingError
 import uuid
@@ -50,6 +51,14 @@ class Command(BaseCommand):
             bot.send_message(chat_id, str(i))
             time.sleep(1)
 
+    def find_user(self, username):
+        try:
+            return User.objects.get(username=username)
+        except User.DoesNotExist:
+            user = User.objects.create_user(username, "", "PaSSw0rd!")
+            user.save()
+            return user
+
     def process_imdb_links(self, message):
         new_count = 0
         for m in imdb_link.findall(message.text):
@@ -61,6 +70,10 @@ class Command(BaseCommand):
                 if new_count > 0:
                     time.sleep(1)
 
+                # Obtain user
+                user = self.find_user(message.from_user.username)
+
+                # Process details
                 movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
                 bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database.\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
 
@@ -74,10 +87,11 @@ class Command(BaseCommand):
                     watched=False,
                     cage_factor=False,
                     rock_factor=False,
+                    suggested_by=user,
                     # expressed_interest=[],
                 )
                 movie.save()
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, done.")
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user.username}.")
                 new_count += 1
 
     def handle(self, *args, **options):

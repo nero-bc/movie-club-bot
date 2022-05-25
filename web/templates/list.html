@@ -11,6 +11,7 @@ Movie List
 		<tr>
 			<th>IMDB Link</th>
 			<th>Title</th>
+			<th>Suggested By</th>
 			<th>Score</th>
 		</tr>
 	</thead>
@@ -19,6 +20,7 @@ Movie List
 		<tr>
 			<td>{{ m.imdb_id  }}</td>
 			<td>{{ m.title  }}</td>
+			<td>{{ m.suggested_by }}</td>
 			<td>{{ m.get_score }}</td>
 		</tr>
 		{% endfor %}

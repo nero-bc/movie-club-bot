@@ -22,6 +22,8 @@ class MovieSuggestion(models.Model):
     rock_factor = models.BooleanField()
     expressed_interest = models.ManyToManyField(User)
 
+    suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='suggestion')
+
     @property
     def get_score(self):
         year_debuff = (self.year - 2022) / 6
