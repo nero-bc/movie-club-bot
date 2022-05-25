@@ -8,7 +8,7 @@ from django.http import HttpResponse
 def index(request):
     template = loader.get_template('list.html')
     context = {
-        'unwatched': MovieSuggestion.objects.filter(watched=False),
-        'watched': MovieSuggestion.objects.filter(watched=True)
+        'unwatched': sorted(MovieSuggestion.objects.filter(watched=False), key=lambda x: -x.get_score),
+        'watched': MovieSuggestion.objects.filter(watched=True).order_by('-watched_date')
     }
     return HttpResponse(template.render(context, request))
