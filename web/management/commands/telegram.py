@@ -216,6 +216,8 @@ class Command(BaseCommand):
             self.send_rate_poll(message)
         elif message.text.startswith('/suggest'):
             self.suggest(message)
+        elif message.text.startswith('/'):
+            bot.send_message(message.chat.id, "You talkin' to me? Well I don't understand ya, try again.")
         else:
             self.process_imdb_links(message)
 
