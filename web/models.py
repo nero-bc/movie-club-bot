@@ -36,6 +36,9 @@ class MovieSuggestion(models.Model):
         return (self.expressed_interest.count() + 1) * \
             (runtime_debuff + rock+  cage + vote_adj)
 
+    def __str__(self):
+        return f"{self.title} ({self.year})"
+
 class CriticRating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
@@ -43,3 +46,6 @@ class CriticRating(models.Model):
 
     class Meta:
         unique_together= (('user', 'film'),)
+
+    def __str__(self):
+        return f"{self.user.first_name}|{self.film}"

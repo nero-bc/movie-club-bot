@@ -130,7 +130,7 @@ class Command(BaseCommand):
         user.save()
 
         # Send them the password
-        bot.reply_to(message, f"Your new password is: {newpassword}. Go change it at https://movie-club-bot.app.galaxians.org/admin/password_change/")
+        bot.reply_to(message, f"Username: {user.username}\npassword: {newpassword}\n\n Go change it at https://movie-club-bot.app.galaxians.org/admin/password_change/")
 
     def process_imdb_links(self, message):
         new_count = 0
