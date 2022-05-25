@@ -9,7 +9,6 @@ Movie List
 <table class="table table-striped">
 	<thead>
 		<tr>
-			<th>IMDB Link</th>
 			<th>Title</th>
 			<th>Suggested By</th>
 			<th>Score</th>
@@ -18,8 +17,11 @@ Movie List
 	<tbody>
 		{% for m in unwatched %}
 		<tr>
-			<td>{{ m.imdb_id  }}</td>
-			<td>{{ m.title  }}</td>
+			<td>
+				<a href="https://www.imdb.com/title/{{ m.imdb_id }}/">
+				{{ m.title }}
+				</a>
+			</td>
 			<td>{{ m.suggested_by.first_name }}</td>
 			<td>{{ m.get_score }}</td>
 		</tr>
@@ -31,7 +33,6 @@ Movie List
 <table class="table table-striped">
 	<thead>
 		<tr>
-			<th>IMDB Link</th>
 			<th>Title</th>
 			<th>Suggested By</th>
 			<th>Score</th>
@@ -41,8 +42,11 @@ Movie List
 	<tbody>
 		{% for m in watched %}
 		<tr>
-			<td>{{ m.imdb_id  }}</td>
-			<td>{{ m.title  }}</td>
+			<td>
+				<a href="https://www.imdb.com/title/{{ m.imdb_id }}/">
+				{{ m.title }}
+				</a>
+			</td>
 			<td>{{ m.suggested_by.first_name }}</td>
 			<td>{{ m.get_score }}</td>
 			<td>{{ m.get_rating }}</td>
