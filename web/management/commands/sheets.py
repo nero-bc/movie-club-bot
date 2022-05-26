@@ -1,4 +1,5 @@
 import sys
+import time
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
@@ -42,6 +43,7 @@ class Command(BaseCommand):
         for line in sys.stdin.readlines()[1:]:
             unparsed = line.strip().split('\t')
             data = dict(zip(cols, [p(x) for x in unparsed]))
+            print(data)
             m = MovieSuggestion.from_imdb(data['imdb'])
             m.watched = data['watched']
             if data['cage']:
@@ -60,3 +62,4 @@ class Command(BaseCommand):
 
             m.save()
             print(m)
+            time.sleep(1)
