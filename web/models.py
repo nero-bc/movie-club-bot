@@ -81,15 +81,42 @@ class MovieSuggestion(models.Model):
 
 
         movie_details = get_ld_json(f"https://www.imdb.com/title/{imdb_id}/")
+
+        # This is gross and I hate it.
+        try:
+            y_s = int(movie_details['datePublished'].split('-')[0])
+        except:
+            y_s = 0
+
+        try:
+            rv_s = movie_details['aggregateRating']['ratingValue']
+        except:
+            rv_s = 0
+
+        try:
+            rc_s = movie_details['aggregateRating']['ratingCount']
+        except:
+            rc_s = 0
+
+        try:
+            r_s = isodate.parse_duration(movie_details['duration']).seconds / 60
+        except:
+            r_s = 0
+
+        try:
+            g_s = ','.join(movie_details['genre'])
+        except:
+            g_s = ''
+
         movie = cls(
             # IMDB Metadata
             imdb_id=imdb_id,
             title=movie_details['name'],
-            year=int(movie_details['datePublished'].split('-')[0]),
-            rating=movie_details['aggregateRating']['ratingValue'],
-            ratings=movie_details['aggregateRating']['ratingCount'],
-            runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
-            genre=','.join(movie_details['genre']),
+            year=y_s,
+            rating=rv_s,
+            ratings=rc_s,
+            runtime=r_s,
+            genre=g_s,
             meta=json.dumps(movie_details),
             # This is new
             watched=False,
