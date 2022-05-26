@@ -1,6 +1,11 @@
 from django.db import models
+import random
+import time
+import json
+import isodate
 import math
 from django.contrib.auth.models import User
+from web.utils import get_ld_json
 
 # Monkey patch, yikes.
 User.__str__ = lambda self: self.first_name if self.first_name else self.username
@@ -28,6 +33,7 @@ class MovieSuggestion(models.Model):
     ratings = models.IntegerField() # The IMDB number of people rating it.
     runtime = models.IntegerField()
     genre = models.TextField(null=True, blank=True)
+    meta = models.TextField(null=True)
 
     added = models.DateTimeField(auto_now_add=True)
 
@@ -65,6 +71,33 @@ class MovieSuggestion(models.Model):
     def get_buffs(self):
         b = self.buffs.all()
         return "".join(map(str, b))
+
+    @classmethod
+    def from_imdb(cls, imdb_id):
+        try:
+            return cls.objects.get(imdb_id=imdb_id)
+        except cls.DoesNotExist:
+            pass
+
+
+        movie_details = get_ld_json(f"https://www.imdb.com/title/{imdb_id}/")
+        movie = cls(
+            # IMDB Metadata
+            imdb_id=imdb_id,
+            title=movie_details['name'],
+            year=int(movie_details['datePublished'].split('-')[0]),
+            rating=movie_details['aggregateRating']['ratingValue'],
+            ratings=movie_details['aggregateRating']['ratingCount'],
+            runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
+            genre=','.join(movie_details['genre']),
+            meta=json.dumps(movie_details),
+            # This is new
+            watched=False,
+            suggested_by=None,
+            # expressed_interest=[],
+        )
+        time.sleep(2 + random.random())
+        return movie
 
     def __str__(self):
         return f"{self.title} ({self.year})"

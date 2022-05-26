@@ -93,12 +93,6 @@ class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
 
 
-    def get_ld_json(self, url: str) -> dict:
-        parser = "html.parser"
-        req = requests.get(url)
-        soup = BeautifulSoup(req.text, parser)
-        return json.loads("".join(soup.find("script", {"type":"application/ld+json"}).contents))
-
     def locate(self, message):
         r = requests.get('https://ipinfo.io/json').json()
         org = r['org']
@@ -170,27 +164,14 @@ class Command(BaseCommand):
                 user = find_user(message.from_user)
 
                 # Process details
-                movie_details = self.get_ld_json(f"https://www.imdb.com/title/{m}/")
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
+                movie = MovieSuggestion.from_imdb(m)
+                movie_details = json.loads(movie.meta)
 
-                movie = MovieSuggestion.objects.create(
-                    # IMDB Metadata
-                    imdb_id=m,
-                    title=movie_details['name'],
-                    year=int(movie_details['datePublished'].split('-')[0]),
-                    rating=movie_details['aggregateRating']['ratingValue'],
-                    ratings=movie_details['aggregateRating']['ratingCount'],
-                    runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
-                    genre=movie_details['genre'],
-                    # This is new
-                    watched=False,
-                    suggested_by=user,
-                    # expressed_interest=[],
-                )
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{m.title}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
+
+                movie.suggested_by = user
                 movie.save()
-                # bot.send_message(message.chat.id, f"{m} looks like a new movie, thanks for the suggestion {user}.")
                 new_count += 1
-
                 self.send_interest_poll(message, movie)
 
     def command_dispatch(self, message):
