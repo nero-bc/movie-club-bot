@@ -49,13 +49,17 @@ class MovieSuggestion(models.Model):
 
     @property
     def get_score(self):
-        year_debuff = (self.year - 2022) / 6 # TODO: "this" year.
-        runtime_debuff = abs(self.runtime - 90) / 10
-        buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
-        vote_adj = math.log10(self.ratings) * self.rating + year_debuff
+        try:
+            year_debuff = (self.year - 2022) / 6 # TODO: "this" year.
+            runtime_debuff = abs(self.runtime - 90) / 10
+            buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
+            vote_adj = math.log10(self.ratings) * self.rating + year_debuff
 
-        return round((self.expressed_interest.count() + 1) * \
-            (runtime_debuff + buff_score + vote_adj), 2)
+            return round((self.expressed_interest.count() + 1) * \
+                (runtime_debuff + buff_score + vote_adj), 2)
+        except:
+            # Some things are weird here, dunno why.
+            return 0
 
     @property
     def get_rating(self):
