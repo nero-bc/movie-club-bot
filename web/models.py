@@ -115,7 +115,7 @@ class MovieSuggestion(models.Model):
         movie = cls(
             # IMDB Metadata
             imdb_id=imdb_id,
-            title=movie_details['name'],
+            title=movie_details['name'].replace("&apos;", "'"),
             year=y_s,
             rating=rv_s,
             ratings=rc_s,
