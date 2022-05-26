@@ -46,6 +46,9 @@ class Command(BaseCommand):
             print(data)
             m = MovieSuggestion.from_imdb(data['imdb'])
             m.watched = data['watched']
+            # Must save before we can add related records.
+            m.save()
+
             if data['cage']:
                 m.buffs.add(cage)
             if data['rock']:
