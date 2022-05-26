@@ -6,7 +6,7 @@ from django.contrib.auth.models import Permission
 from django.db.utils import ProgrammingError
 import uuid
 
-from web.models import MovieSuggestion, CriticRating
+from web.models import *
 
 import isodate
 from bs4 import BeautifulSoup
@@ -29,18 +29,19 @@ from telebot import TeleBot, types
 
 
 # Poll Handling
-KNOWN_POLLS = {}
 def handle_user_response(response):
     user_id = response.user.id
     option_ids = response.option_ids
     poll_id = response.poll_id
     user = find_user(response.user)
-    film = KNOWN_POLLS[poll_id]['f']
 
-    if KNOWN_POLLS[poll_id]['t'] == 'rate':
-        critic_rating = KNOWN_POLLS[poll_id]['o'][option_ids[0]]
+    poll = Poll.objects.get(poll_id=poll_id)
+    film = poll.film
 
-        print(user_id, poll_id, option_ids, KNOWN_POLLS[poll_id])
+    if poll.poll_type == 'rate':
+        critic_rating = option_ids[0]
+
+        print(user_id, poll_id, option_ids, poll)
         try:
             cr = CriticRating.objects.get(user=user, film=film)
             cr.score = critic_rating
@@ -52,7 +53,7 @@ def handle_user_response(response):
                 score=critic_rating,
             )
             cr.save()
-    elif KNOWN_POLLS[poll_id]['t'] == 'interest':
+    elif poll.poll_type == 'interest':
         # Only care if they're interested
         if option_ids[0] != 0:
             return
@@ -173,6 +174,7 @@ class Command(BaseCommand):
                 bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie_details['name']}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
 
                 movie = MovieSuggestion.objects.create(
+                    # IMDB Metadata
                     imdb_id=m,
                     title=movie_details['name'],
                     year=int(movie_details['datePublished'].split('-')[0]),
@@ -180,9 +182,8 @@ class Command(BaseCommand):
                     ratings=movie_details['aggregateRating']['ratingCount'],
                     runtime=isodate.parse_duration(movie_details['duration']).seconds / 60,
                     genre=movie_details['genre'],
+                    # This is new
                     watched=False,
-                    cage_factor=False,
-                    rock_factor=False,
                     suggested_by=user,
                     # expressed_interest=[],
                 )
@@ -226,13 +227,14 @@ class Command(BaseCommand):
         options = ['💯', 'meh']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
-        KNOWN_POLLS[r.poll.id] = {
-            'f': film,
-            'q': question,
-            'o': options,
-            't': 'interest',
-        }
-
+        p = Poll.objects.create(
+            poll_id=r.poll.id,
+            film=film,
+            question=question,
+            options='__'.join(options),
+            poll_type="interest"
+        )
+        p.save()
     def send_rate_poll(self, message: types.Message):
         parts = message.text.split()
         if len(parts) != 2:
@@ -253,13 +255,14 @@ class Command(BaseCommand):
         options = ['0', '⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
-        KNOWN_POLLS[r.poll.id] = {
-            'f': film,
-            'q': question,
-            'o': options,
-            't': 'rate',
-        }
 
+        p = Poll.objects.create(
+            poll_id=r.poll.id,
+            film=film,
+            question=question,
+            options='__'.join(options),
+            poll_type="rate"
+        )
 
     def handle(self, *args, **options):
         def handle_messages(messages):

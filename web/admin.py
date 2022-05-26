@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import MovieSuggestion, CriticRating, Buff
+from .models import *
 
 class MovieSuggestionAdmin(admin.ModelAdmin):
     list_display = ('title', 'year', 'rating', 'watched', 'suggested_by', 'get_score')
@@ -21,3 +21,9 @@ class BuffAdmin(admin.ModelAdmin):
     list_display = ('short', 'name', 'value')
 
 admin.site.register(Buff, BuffAdmin)
+
+
+class PollAdmin(admin.ModelAdmin):
+    list_display = ('film', 'question', 'created')
+
+admin.site.register(Poll, PollAdmin)

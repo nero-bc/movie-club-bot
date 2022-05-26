@@ -24,8 +24,8 @@ class MovieSuggestion(models.Model):
     # Meta
     title = models.TextField()
     year = models.IntegerField()
-    rating = models.FloatField()
-    ratings = models.IntegerField()
+    rating = models.FloatField() # The IMDB score
+    ratings = models.IntegerField() # The IMDB number of people rating it.
     runtime = models.IntegerField()
     genre = models.TextField(null=True, blank=True)
 
@@ -43,7 +43,7 @@ class MovieSuggestion(models.Model):
 
     @property
     def get_score(self):
-        year_debuff = (self.year - 2022) / 6
+        year_debuff = (self.year - 2022) / 6 # TODO: "this" year.
         runtime_debuff = abs(self.runtime - 90) / 10
         buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
         vote_adj = math.log10(self.ratings) * self.rating + year_debuff
@@ -70,6 +70,7 @@ class MovieSuggestion(models.Model):
         return f"{self.title} ({self.year})"
 
 class CriticRating(models.Model):
+    # Us, we're the critics.
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
     score = models.IntegerField()
@@ -79,3 +80,12 @@ class CriticRating(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name}|{self.film}"
+
+
+class Poll(models.Model):
+    poll_id = models.TextField(primary_key=True)
+    film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
+    question = models.TextField()
+    options = models.TextField()
+    poll_type = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
