@@ -72,6 +72,7 @@ $(document).ready(function () {
     $('#movieTable').DataTable({
         "pageLength": 25,
         order: [[5, 'desc']],
+        pagingType: 'full_numbers',
     });
 });
 
@@ -79,6 +80,7 @@ $(document).ready(function () {
     $('#watchedTable').DataTable({
         "pageLength": 25,
         order: [[3, 'desc']],
+        pagingType: 'full_numbers',
     });
 });
 </script>
