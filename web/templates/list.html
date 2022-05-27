@@ -24,7 +24,7 @@ Movie List
 				</a>
 			</td>
 			<td>{{ m.suggested_by.first_name }}</td>
-			<td>{{ m.get_score }}</td>
+			<td>{{ m.get_score|floatformat:2 }}</td>
 			<td>{{ m.get_buffs }}</td>
 		</tr>
 		{% endfor %}
