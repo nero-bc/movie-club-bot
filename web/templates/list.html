@@ -70,13 +70,15 @@ Movie List
 <script>
 $(document).ready(function () {
     $('#movieTable').DataTable({
-        "pageLength": 25
+        "pageLength": 25,
+        order: [[5, 'desc']],
     });
 });
 
 $(document).ready(function () {
     $('#watchedTable').DataTable({
-        "pageLength": 25
+        "pageLength": 25,
+        order: [[3, 'desc']],
     });
 });
 </script>
