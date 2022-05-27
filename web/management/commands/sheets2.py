@@ -176,6 +176,10 @@ class Command(BaseCommand):
             uu = User.objects.get(username=u)
             film = MovieSuggestion.objects.get(imdb_id=i)
 
-            film.suggested_by = uu
-            film.added = tt
-            film.save()
+            try:
+                film.suggested_by = uu
+                film.added = tt
+                film.save()
+            except Exception as e:
+                # Whatever.
+                print(e)
