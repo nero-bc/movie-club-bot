@@ -25,7 +25,11 @@ Movie List
 				{{ m.title }}
 				</a>
 			</td>
-			<td>{{ m.suggested_by.first_name }}</td>
+			<td>
+				{% if m.suggested_by %}
+				<a href="{% url 'profile' m.suggested_by.username %}">{{ m.suggested_by.first_name }}</a>
+				{% endif %}
+			</td>
 			<td>{{ m.days_since_added }}</td>
 			<td>{{ m.rating }}</td>
 			<td>{{ m.get_score|floatformat:2 }}</td>

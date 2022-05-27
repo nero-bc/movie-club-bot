@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ acct.first_name }} {{ acct.last_name }}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ acct.first_name }} {{ acct.last_name }}</h1>
+
+<h2>Most Suggested Genres</h2>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Genre</th>
+			<th>Films</th>
+		</tr>
+	</thead>
+	<tbody>
+{% for k, v in genres %}
+		<tr>
+			<td>{{ k }}</td>
+			<td>{{ v }}</td>
+		</tr>
+{% endfor %}
+	</tbody>
+</table>
+
+<h2>Ratings</h2>
+<h2>Suggested Films</h2>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Title</th>
+			<th>Rated</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for rating in ratings %}
+		<tr>
+			<td>
+				<a href="https://www.imdb.com/title/{{ rating.film.imdb_id }}/">
+				{{ rating.film }}
+				</a>
+			</td>
+			<td>{{ rating.score }}</td>
+
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+
+
+
+<h2>Suggested Films</h2>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Title</th>
+			<th>Genre</th>
+			<th>Days Since Added</th>
+			<th>IMDB rating</th>
+			<th>Score</th>
+			<th>Buffs</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for m in suggested %}
+		<tr>
+			<td>
+				<a href="https://www.imdb.com/title/{{ m.imdb_id }}/">
+				{{ m.title }}
+				</a>
+			</td>
+			<td>
+				{{ m.genre }}
+			</td>
+			<td>{{ m.days_since_added }}</td>
+			<td>{{ m.rating }}</td>
+			<td>{{ m.get_score|floatformat:2 }}</td>
+			<td>{{ m.get_buffs }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}
