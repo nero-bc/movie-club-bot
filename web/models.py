@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import now
 import random
 import time
 import json
@@ -54,12 +55,19 @@ class MovieSuggestion(models.Model):
             runtime_debuff = abs(self.runtime - 90) / 10
             buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
             vote_adj = math.log10(self.ratings) * self.rating + year_debuff
+            old = self.days_since_added / 20
 
             return round((self.expressed_interest.count() + 1) * \
-                (runtime_debuff + buff_score + vote_adj), 2)
+                (runtime_debuff + buff_score + vote_adj), 2) - old
         except:
             # Some things are weird here, dunno why.
             return 0
+
+    @property
+    def days_since_added(self):
+        today = now()
+        diff = today - self.added
+        return diff.days
 
     @property
     def get_rating(self):
