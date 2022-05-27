@@ -143,7 +143,7 @@ class Command(BaseCommand):
         unwatched = sorted(MovieSuggestion.objects.filter(watched=False), key=lambda x: -x.get_score)[0:3]
         msg = "Top 3 films to watch:\n\n"
         for film in unwatched:
-            msg += f"{film.title} ({film.year})"
+            msg += f"{film.title} ({film.year})\n"
             msg += f"  ⭐️{film.rating}\n"
             msg += f"  ⏰{film.runtime}\n"
             msg += f"  📕{film.genre}\n\n"
