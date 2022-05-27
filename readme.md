@@ -2,12 +2,12 @@
 
 TODO:
 
-- generate suggestions for what to watch, on demand
 - restricting the users?
 - does the dog die integration
 
 Done
 
+- generate suggestions for what to watch, on demand
 - https
 - `/help`
 - vote on films, record reactjis
