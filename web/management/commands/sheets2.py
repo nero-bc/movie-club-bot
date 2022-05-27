@@ -172,11 +172,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for (t, u, i) in data:
+            print(i)
             tt = datetime.datetime.strptime(t, "%Y-%m-%d %H:%M")
             uu = User.objects.get(username=u)
-            film = MovieSuggestion.objects.get(imdb_id=i)
 
             try:
+                film = MovieSuggestion.objects.get(imdb_id=i)
                 film.suggested_by = uu
                 film.added = tt
                 film.save()
