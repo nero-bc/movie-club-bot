@@ -220,6 +220,11 @@ class Command(BaseCommand):
         elif message.text.startswith('/suggest'):
             self.suggest(message)
         elif self.is_gpt3(message.text):
+            if len(message.text.strip().split()) < 3:
+                bot.reply_to(message, "Prompt too short, please try something longer.")
+                return
+
+
             model, short = self.is_gpt3(message.text)
 
             response = openai.Completion.create(
