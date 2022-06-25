@@ -236,8 +236,8 @@ class Command(BaseCommand):
                 frequency_penalty=0,
                 presence_penalty=0
             )
-            gpt3 = response.to_dict()['choices'][0].text
-            bot.reply_to(message, gpt3.strip())
+            gpt3_text = response.to_dict()['choices'][0].text
+            bot.reply_to(message, "Prompt: " + message.text[len(short) + 1:] + gpt3_text)
         elif message.text.startswith('/'):
             bot.send_message(message.chat.id, "You talkin' to me? Well I don't understand ya, try again.")
         else:
