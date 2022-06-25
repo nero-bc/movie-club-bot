@@ -181,11 +181,11 @@ class Command(BaseCommand):
     def is_gpt3(self, text):
         if text.startswith('/davinci'):
             return ('text-davinci-002', '/davinci')
-        elif text.starswith('/babbage'):
+        elif text.startswith('/babbage'):
             return ('text-babbage-001', '/babbage')
-        elif text.starswith('/curie'):
+        elif text.startswith('/curie'):
             return ('text-curie-001', '/curie')
-        elif text.starswith('/ada'):
+        elif text.startswith('/ada'):
             return ('text-ada-001', '/ada')
         else:
             return False
