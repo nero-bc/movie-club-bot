@@ -16,9 +16,11 @@ import os
 import re
 import requests
 import telebot
+import openai
 import time
 
 bot = telebot.TeleBot(os.environ['TELOXIDE_TOKEN'])
+openai.api_key = os.getenv("OPENAI_API_KEY")
 imdb_link = re.compile("imdb.com/title/(tt[0-9]*)/?")
 MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
@@ -176,6 +178,18 @@ class Command(BaseCommand):
                 new_count += 1
                 self.send_interest_poll(message, movie)
 
+    def is_gpt3(self, text):
+        if text.startswith('/davinci'):
+            return ('text-davinci-002', '/davinci')
+        elif text.starswith('/babbage'):
+            return ('text-babbage-001', '/babbage')
+        elif text.starswith('/curie'):
+            return ('text-curie-001', '/curie')
+        elif text.starswith('/ada'):
+            return ('text-ada-001', '/ada')
+        else:
+            return False
+
     def command_dispatch(self, message):
         if message.chat.id != -627602564:
             print(message)
@@ -189,6 +203,11 @@ class Command(BaseCommand):
                 '/rate tt<id> - Ask group to rate the film',
                 '/suggest - Make suggestions for what to watch',
                 '[imdb link] - add to the database',
+                '# GPT-3 Specific',
+                '/ada <text>',
+                '/babbage <text>',
+                '/curie <text>',
+                '/davinci <text>',
             ]))
         elif message.text.startswith('/debug'):
             self.locate(message)
@@ -200,6 +219,19 @@ class Command(BaseCommand):
             self.send_rate_poll(message)
         elif message.text.startswith('/suggest'):
             self.suggest(message)
+        elif self.is_gpt3(message.text):
+            model, short = self.is_gpt3(message.text)
+
+            response = openai.Completion.create(
+                model=model,
+                prompt=message.text[len(short) + 1:],
+                temperature=0.7,
+                max_tokens=512,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0
+            )
+            bot.reply_to(message, response)
         elif message.text.startswith('/'):
             bot.send_message(message.chat.id, "You talkin' to me? Well I don't understand ya, try again.")
         else:
