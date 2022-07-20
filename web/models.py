@@ -56,7 +56,8 @@ class MovieSuggestion(models.Model):
             buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
             vote_adj = math.log10(self.ratings) * self.rating + year_debuff
             old = self.days_since_added / 20
-            interests = sum([i.score for i in self.interest_set.all()]) + 1
+            # Ensure this is non-zero even if we balance it perfectly.
+            interests = sum([i.score for i in self.interest_set.all()]) + 0.5
 
             return round(interests * (runtime_debuff + buff_score + vote_adj), 2) - old
         except:

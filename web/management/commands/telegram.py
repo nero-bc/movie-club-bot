@@ -177,7 +177,7 @@ class Command(BaseCommand):
                 movie = MovieSuggestion.from_imdb(m)
                 movie_details = json.loads(movie.meta)
 
-                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}")
+                bot.send_message(message.chat.id, f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}\n👥{movie_details['aggregateRating']['ratingCount']}⭐️{movie_details['aggregateRating']['ratingValue']}")
 
                 movie.suggested_by = user
                 movie.save()
