@@ -56,12 +56,18 @@ def handle_user_response(response):
             )
             cr.save()
     elif poll.poll_type == 'interest':
-        # Only care if they're interested
-        if option_ids[0] != 0:
-            return
+        # These are numbered 0-4 right?
+        print(option_ids)
 
-        film.expressed_interest.add(user)
-        film.save()
+        interest = 2 - option_ids[0]
+        print(interest)
+
+        ci = Interest.objects.create(
+            user=user,
+            film=film,
+            score=interest,
+        )
+        ci.save()
 
 
 bot.poll_answer_handler(func=lambda call: True)(handle_user_response)
@@ -245,7 +251,7 @@ class Command(BaseCommand):
 
     def send_interest_poll(self, message, film):
         question = f'Do you wanna see {film}?'
-        options = ['💯', '🤷 yeah 🆗', 'meh', '🚫veto🙅']
+        options = ['💯', '🆗', '🤷‍♀️🤷🤷‍♂️ meh', '🤬hatewatch', '🚫veto🙅']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
         p = Poll.objects.create(
