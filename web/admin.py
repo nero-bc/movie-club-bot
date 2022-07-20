@@ -27,3 +27,9 @@ class PollAdmin(admin.ModelAdmin):
     list_display = ('film', 'question', 'created')
 
 admin.site.register(Poll, PollAdmin)
+
+
+class InterestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'film', 'score')
+
+admin.site.register(Interest, InterestAdmin)

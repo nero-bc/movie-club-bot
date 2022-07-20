@@ -43,7 +43,7 @@ class MovieSuggestion(models.Model):
     watched_date = models.DateTimeField(null=True, blank=True)
 
     # Scoring
-    expressed_interest = models.ManyToManyField(User, blank=True)
+    # expressed_interest = models.ManyToManyField(User, blank=True)
     buffs = models.ManyToManyField(Buff, blank=True)
 
     suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='suggestion')
@@ -56,9 +56,9 @@ class MovieSuggestion(models.Model):
             buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
             vote_adj = math.log10(self.ratings) * self.rating + year_debuff
             old = self.days_since_added / 20
+            interests = sum([i.score for i in self.interests.all()]) + 1
 
-            return round((self.expressed_interest.count() + 1) * \
-                (runtime_debuff + buff_score + vote_adj), 2) - old
+            return round(interests * (runtime_debuff + buff_score + vote_adj), 2) - old
         except:
             # Some things are weird here, dunno why.
             return 0
@@ -140,6 +140,17 @@ class MovieSuggestion(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.year})"
+
+class Interest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together= (('user', 'film'),)
+
+    def __str__(self):
+        return f"{self.user.first_name}|{self.film}|{self.score}"
 
 class CriticRating(models.Model):
     # Us, we're the critics.
