@@ -13,8 +13,10 @@ class Command(BaseCommand):
         fixed = [re.sub(r'([A-Z])', r' \1', x[0].lower() + x[1:]).lower() for x in tables]
 
         for user in User.objects.all():
+            print(f"Updating {user}")
             for permission in ('view', 'add', 'change'):
                 for table in fixed:
+                    print(f"  {permission} {table}")
                     user.user_permissions.add(Permission.objects.get(name=f"Can {permission} {table}"))
 
             user.save()
