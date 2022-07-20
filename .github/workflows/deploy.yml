@@ -29,4 +29,4 @@ jobs:
       - name: Deploy 🚀
         run: |
             git remote add dokku dokku@app.galaxians.org:movie-club-bot
-            git push dokku main:master
+            git push dokku main
