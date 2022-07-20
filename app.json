@@ -1,7 +1,8 @@
 {
   "scripts": {
     "dokku": {
-      "predeploy": "python manage.py migrate --noinput; python manage.py upgrade_users;"
+      "predeploy": "python manage.py migrate --noinput",
+      "postdeploy": "python manage.py upgrade_users"
     }
   }
 }
