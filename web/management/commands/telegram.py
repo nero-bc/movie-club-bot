@@ -106,9 +106,9 @@ class Command(BaseCommand):
         org = r['org']
         ip = r['ip']
         if 'GIT_REV' in os.environ:
-            url = f"https://github.com/hexylena/emc-movie-club-bot/commit/{os.environ['GIT_REV']}"
+            url = f"https://github.com/hexylena/movie-club-bot/commit/{os.environ['GIT_REV']}"
         else:
-            url = f"https://github.com/hexylena/emc-movie-club-bot/"
+            url = f"https://github.com/hexylena/movie-club-bot/"
 
         bot.reply_to(message, f"{org} | {ip} | {url} | {message.chat.type}")
 
@@ -165,7 +165,11 @@ class Command(BaseCommand):
             # bot.send_message(message.chat.id, f"Received {m}")
             try:
                 movie = MovieSuggestion.objects.get(imdb_id=m)
-                bot.send_message(message.chat.id, f"{m} known.")
+                resp = f"Suggested by {movie.suggested_by} on {movie.added.strftime('%B %m, %Y')}\nVotes: "
+                for v in movie.interest_set.all():
+                    resp += f"{v.score_e}"
+
+                bot.send_message(message.chat.id, resp)
             except MovieSuggestion.DoesNotExist:
                 if new_count > 0:
                     time.sleep(1)

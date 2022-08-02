@@ -150,6 +150,17 @@ class Interest(models.Model):
     class Meta:
         unique_together= (('user', 'film'),)
 
+    @property
+    def score_e(self):
+        return {
+            2: '💯',
+            1: '🆗',
+            0: '🤷',
+            -1: '🤬',
+            -2: '🚫',
+        }.get(self.score, '?')
+
+
     def __str__(self):
         return f"{self.user.first_name}|{self.film}|{self.score}"
 
