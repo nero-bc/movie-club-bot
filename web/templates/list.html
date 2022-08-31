@@ -15,6 +15,11 @@ Movie List
 			<th>IMDB rating</th>
 			<th>Score</th>
 			<th>Buffs</th>
+			<th>💯</th>
+			<th>🆗</th>
+			<th>🤷</th>
+			<th>🤬</th>
+			<th>🚫</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -34,6 +39,12 @@ Movie List
 			<td>{{ m.rating }}</td>
 			<td>{{ m.get_score|floatformat:2 }}</td>
 			<td>{{ m.get_buffs }}</td>
+
+			<td>{{ m.get_rated_2 | join:',' }}</td>
+			<td>{{ m.get_rated_1 | join:',' }}</td>
+			<td>{{ m.get_rated_0 | join:',' }}</td>
+			<td>{{ m.get_rated_m1 | join:',' }}</td>
+			<td>{{ m.get_rated_m2 | join:',' }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>

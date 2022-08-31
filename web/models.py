@@ -85,6 +85,26 @@ class MovieSuggestion(models.Model):
         b = self.buffs.all()
         return "".join(map(str, b))
 
+    @property
+    def get_rated_2(self):
+        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == 2]
+
+    @property
+    def get_rated_1(self):
+        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == 1]
+
+    @property
+    def get_rated_0(self):
+        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == 0]
+
+    @property
+    def get_rated_m1(self):
+        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -1]
+
+    @property
+    def get_rated_m2(self):
+        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -2]
+
     @classmethod
     def from_imdb(cls, imdb_id):
         try:
