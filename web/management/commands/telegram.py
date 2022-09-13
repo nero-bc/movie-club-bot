@@ -226,6 +226,9 @@ class Command(BaseCommand):
                 '/curie <text>',
                 '/davinci <text>',
             ]))
+        # Ignore me adding /s later
+        elif message.text.startswith('/s'):
+            return
         elif message.text.startswith('/debug'):
             self.locate(message)
         elif message.text.startswith('/passwd'):
