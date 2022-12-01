@@ -240,8 +240,6 @@ class Command(BaseCommand):
                 '/davinci <text>',
             ]))
         # Ignore me adding /s later
-        elif message.text.startswith('/s'):
-            return
         elif message.text.startswith('/debug'):
             self.locate(message)
         elif message.text.startswith('/status'):
@@ -254,6 +252,8 @@ class Command(BaseCommand):
             self.send_rate_poll(message)
         elif message.text.startswith('/suggest'):
             self.suggest(message)
+        elif message.text.startswith('/s'):
+            return
         elif self.is_gpt3(message.text):
             if len(message.text.strip().split()) < 3:
                 bot.reply_to(message, "Prompt too short, please try something longer.")
