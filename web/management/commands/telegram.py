@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+import time
 from django.contrib.auth.models import User
 from django.utils import timezone
 import traceback
@@ -25,6 +26,7 @@ imdb_link = re.compile("imdb.com/title/(tt[0-9]*)/?")
 MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
+START_TIME = time.time()
 
 from telebot.custom_filters import TextFilter, TextMatchFilter, IsReplyFilter
 from telebot import TeleBot, types
@@ -110,7 +112,17 @@ class Command(BaseCommand):
         else:
             url = f"https://github.com/hexylena/movie-club-bot/"
 
-        bot.reply_to(message, f"{org} | {ip} | {url} | {message.chat.type}")
+        data = {
+            'Org': org,
+            'IP': ip,
+            'URL': url,
+            'Message Type': message.chat.type,
+            'Execution Time': time.process_time(),
+            'Uptime': time.time() - START_TIME,
+        }
+
+        fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
+        bot.reply_to(message, fmt_msg)
 
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
@@ -215,6 +227,7 @@ class Command(BaseCommand):
             # Do something with the message
             bot.reply_to(message, 'Howdy, how ya doin\n\n' + '\n'.join([
                 '/debug - Show some debug info',
+                '/status - Show some status info',
                 '/passwd - Change your password (DM only.)',
                 '/countdown [number] - Start a countdown',
                 '/rate tt<id> - Ask group to rate the film',
@@ -230,6 +243,8 @@ class Command(BaseCommand):
         elif message.text.startswith('/s'):
             return
         elif message.text.startswith('/debug'):
+            self.locate(message)
+        elif message.text.startswith('/status'):
             self.locate(message)
         elif message.text.startswith('/passwd'):
             self.change_password(message)
