@@ -1,16 +1,13 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 import time
 from django.contrib.auth.models import User
 from django.utils import timezone
 import traceback
 from django.contrib.auth.models import Permission
-from django.db.utils import ProgrammingError
 import uuid
 
-from web.models import *
+from web.models import CriticRating, Interest, MovieSuggestion, Poll
 
-import isodate
-from bs4 import BeautifulSoup
 import datetime
 import json
 import os
@@ -18,7 +15,6 @@ import re
 import requests
 import telebot
 import openai
-import time
 
 bot = telebot.TeleBot(os.environ['TELOXIDE_TOKEN'])
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -27,9 +23,6 @@ MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 START_TIME = time.time()
-
-from telebot.custom_filters import TextFilter, TextMatchFilter, IsReplyFilter
-from telebot import TeleBot, types
 
 
 # Poll Handling
@@ -110,15 +103,15 @@ class Command(BaseCommand):
         if 'GIT_REV' in os.environ:
             url = f"https://github.com/hexylena/movie-club-bot/commit/{os.environ['GIT_REV']}"
         else:
-            url = f"https://github.com/hexylena/movie-club-bot/"
+            url = "https://github.com/hexylena/movie-club-bot/"
 
         data = {
             'Org': org,
             'IP': ip,
             'URL': url,
             'Message Type': message.chat.type,
-            'Execution Time': time.process_time(),
-            'Uptime': time.time() - START_TIME,
+            'Execution Time': datetime.timedelta(seconds=time.process_time()),
+            'Uptime': datetime.timedelta(seconds=time.time() - START_TIME),
         }
 
         fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
@@ -291,7 +284,7 @@ class Command(BaseCommand):
             poll_type="interest"
         )
         p.save()
-    def send_rate_poll(self, message: types.Message):
+    def send_rate_poll(self, message: telebot.types.Message):
         parts = message.text.split()
         if len(parts) != 2:
             bot.send_message(message.chat.id, "Error, use /rate tt<id>")
@@ -311,8 +304,7 @@ class Command(BaseCommand):
         options = ['0', '⭐️', '⭐️⭐️', '⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️', '⭐️⭐️⭐️⭐️⭐️']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
-
-        p = Poll.objects.create(
+        Poll.objects.create(
             poll_id=r.poll.id,
             film=film,
             question=question,
