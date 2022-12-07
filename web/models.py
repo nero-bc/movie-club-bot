@@ -226,3 +226,8 @@ class PollArbitrary(models.Model):
     options = models.TextField()
     poll_type = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
+
+class AntiInterest(models.Model):
+    poll_id = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)

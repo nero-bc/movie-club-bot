@@ -67,6 +67,15 @@ def handle_user_response(response):
         )
         ci.save()
     elif poll.poll_type == 'removal':
+        # tt8064418__tt7286966__tt4682266 [1] Helena
+        tt_id = poll.options.split('__')[option_ids[0]]
+        film = MovieSuggestion.objects.get(imdb_id=tt_id)
+        ai = AntiInterest.objects.create(
+            poll_id=poll.poll_id,
+            user=user,
+            film=film,
+        )
+        ai.save()
         print(poll.options, option_ids, user)
 
 
