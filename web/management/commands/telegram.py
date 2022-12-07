@@ -6,7 +6,7 @@ import traceback
 from django.contrib.auth.models import Permission
 import uuid
 
-from web.models import CriticRating, Interest, MovieSuggestion, Poll
+from web.models import CriticRating, Interest, MovieSuggestion, Poll, PollArbitrary
 
 import datetime
 import json
@@ -32,10 +32,13 @@ def handle_user_response(response):
     poll_id = response.poll_id
     user = find_user(response.user)
 
-    poll = Poll.objects.get(poll_id=poll_id)
-    film = poll.film
+    try:
+        poll = Poll.objects.get(poll_id=poll_id)
+    except:
+        poll = PollArbitrary.objects.get(poll_id=poll_id)
 
     if poll.poll_type == 'rate':
+        film = poll.film
         critic_rating = option_ids[0]
 
         print(user_id, poll_id, option_ids, poll)
@@ -51,9 +54,9 @@ def handle_user_response(response):
             )
             cr.save()
     elif poll.poll_type == 'interest':
+        film = poll.film
         # These are numbered 0-4 right?
         print(option_ids)
-
         interest = 2 - option_ids[0]
         print(interest)
 
@@ -63,6 +66,8 @@ def handle_user_response(response):
             score=interest,
         )
         ci.save()
+    elif poll.poll_type == 'removal':
+        print(poll.options, option_ids, user)
 
 
 bot.poll_answer_handler(func=lambda call: True)(handle_user_response)
@@ -291,15 +296,17 @@ class Command(BaseCommand):
 
     def send_removal_poll(self, message):
         question = f'Pick one of these to DELETE from our watchlist.'
-        options = ['a', 'b', 'c']
+        options = sorted(MovieSuggestion.objects.all(), key=lambda x: x.get_score)[0:3]
 
-        r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
-        p = Poll.objects.create(
+        option_text = [str(x) for x in options]
+        option_nums = [x.id for x in options]
+
+        r = bot.send_poll(message.chat.id, question=question, options=option_text, is_anonymous=False)
+        p = PollArbitrary.objects.create(
             poll_id=r.poll.id,
-            film=None,
             question=question,
-            options='__'.join(options),
-            poll_type="remove"
+            options='__'.join([options_nums),
+            poll_type="removal"
         )
         p.save()
 

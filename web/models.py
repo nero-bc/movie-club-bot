@@ -37,7 +37,7 @@ class MovieSuggestion(models.Model):
     meta = models.TextField(null=True)
 
     added = models.DateTimeField(auto_now_add=True)
-    
+
     # Our info
     status = models.IntegerField()
     # 0: New
@@ -203,6 +203,15 @@ class CriticRating(models.Model):
 class Poll(models.Model):
     poll_id = models.TextField(primary_key=True)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
+    question = models.TextField()
+    options = models.TextField()
+    poll_type = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+
+class PollArbitrary(models.Model):
+    poll_id = models.TextField(primary_key=True)
+    metadata = models.TextField(blank=True, null=True) # Equivalent to 'Film', but, arbitrary
     question = models.TextField()
     options = models.TextField()
     poll_type = models.TextField()
