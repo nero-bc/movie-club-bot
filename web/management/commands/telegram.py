@@ -265,6 +265,8 @@ class Command(BaseCommand):
             self.send_rate_poll(message)
         elif message.text.startswith('/suggest'):
             self.suggest(message)
+        elif message.text.startswith('/update'):
+            self.update_imdb_meta(message)
         elif message.text.startswith('/s'):
             return
         elif self.is_gpt3(message.text):
@@ -304,6 +306,11 @@ class Command(BaseCommand):
             poll_type="interest"
         )
         p.save()
+
+    def update_imdb_meta(self, message):
+        for m in MovieSuggestion.objects.filter(rating=0):
+            m.update_from_imdb()
+            bot.send_message(message.chat.id, f"Updating {m} from imdb")
 
     def finalize_removal_poll(self, message):
         # Get latest removal poll

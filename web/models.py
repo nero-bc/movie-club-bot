@@ -73,7 +73,7 @@ class MovieSuggestion(models.Model):
 
             old = self.days_since_added / 20
             # Ensure this is non-zero even if we balance it perfectly.
-            interests = sum([i.score for i in self.interest_set.all()]) + 0.5
+            interests = (sum([i.score for i in self.interest_set.all()]) + 0.5) / 4
 
             return round(interests * (runtime_debuff + buff_score + vote_adj), 2) - old
         except:
@@ -120,6 +120,44 @@ class MovieSuggestion(models.Model):
     @property
     def get_rated_m2(self):
         return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -2]
+
+    def update_from_imdb(self):
+        movie_details = get_ld_json(f"https://www.imdb.com/title/{self.imdb_id}/")
+
+        # This is gross and I hate it.
+        try:
+            y_s = int(movie_details['datePublished'].split('-')[0])
+        except:
+            y_s = 0
+
+        try:
+            rv_s = movie_details['aggregateRating']['ratingValue']
+        except:
+            rv_s = 0
+
+        try:
+            rc_s = movie_details['aggregateRating']['ratingCount']
+        except:
+            rc_s = 0
+
+        try:
+            r_s = isodate.parse_duration(movie_details['duration']).seconds / 60
+        except:
+            r_s = 0
+
+        try:
+            g_s = ','.join(movie_details['genre'])
+        except:
+            g_s = ''
+
+        self.title = movie_details['name'].replace("&apos;", "'")
+        self.year = y_s
+        self.rating = rv_s
+        self.ratings = rc_s
+        self.runtime = r_s
+        self.genre = g_s
+        self.meta = json.dumps(movie_details)
+        self.save()
 
     @classmethod
     def from_imdb(cls, imdb_id):
