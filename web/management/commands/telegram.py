@@ -109,9 +109,11 @@ class Command(BaseCommand):
             'Org': org,
             'IP': ip,
             'URL': url,
-            'Message Type': message.chat.type,
             'Execution Time': datetime.timedelta(seconds=time.process_time()),
             'Uptime': datetime.timedelta(seconds=time.time() - START_TIME),
+            'Chat Type': message.chat.type,
+            'Chat ID': message.chat.id,
+            'Chat sender': message.from_user.id,
         }
 
         fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
