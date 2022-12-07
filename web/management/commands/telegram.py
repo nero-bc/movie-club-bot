@@ -6,7 +6,7 @@ import traceback
 from django.contrib.auth.models import Permission
 import uuid
 
-from web.models import CriticRating, Interest, MovieSuggestion, Poll, PollArbitrary
+from web.models import CriticRating, Interest, MovieSuggestion, Poll, PollArbitrary, AntiInterest
 
 import datetime
 import json
@@ -314,6 +314,7 @@ class Command(BaseCommand):
         p = PollArbitrary.objects.create(
             poll_id=r.poll.id,
             question=question,
+            metadata=message.chat.id,
             options='__'.join(option_nums),
             poll_type="removal"
         )
