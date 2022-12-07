@@ -295,17 +295,17 @@ class Command(BaseCommand):
         p.save()
 
     def send_removal_poll(self, message):
-        question = f'Pick one of these to DELETE from our watchlist.'
+        question = 'Pick one of these to DELETE from our watchlist.'
         options = sorted(MovieSuggestion.objects.all(), key=lambda x: x.get_score)[0:3]
 
-        option_text = [str(x) for x in options]
-        option_nums = [x.imdb_id for x in options]
+        option_text = [f"{x.title} ({x.year}), added {x.days_since_added} days ago, rating {x.rating}" for x in options]
+        option_nums = [str(x.imdb_id) for x in options]
 
         r = bot.send_poll(message.chat.id, question=question, options=option_text, is_anonymous=False)
         p = PollArbitrary.objects.create(
             poll_id=r.poll.id,
             question=question,
-            options='__'.join([option_nums]),
+            options='__'.join(option_nums),
             poll_type="removal"
         )
         p.save()
