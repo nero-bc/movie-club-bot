@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import *
+from .models import MovieSuggestion, CriticRating, Buff, Poll, PollArbitrary, Interest
 
 class MovieSuggestionAdmin(admin.ModelAdmin):
     list_display = ('title', 'year', 'rating', 'status', 'suggested_by', 'get_score')
@@ -24,9 +24,15 @@ admin.site.register(Buff, BuffAdmin)
 
 
 class PollAdmin(admin.ModelAdmin):
-    list_display = ('film', 'question', 'created')
+    list_display = ('film', 'question', 'created', 'poll_type')
 
 admin.site.register(Poll, PollAdmin)
+
+
+class PollArbitraryAdmin(admin.ModelAdmin):
+    list_display = ('metadata', 'question', 'options', 'created')
+
+admin.site.register(PollArbitrary, PollArbitraryAdmin)
 
 
 class InterestAdmin(admin.ModelAdmin):
