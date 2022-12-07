@@ -299,13 +299,13 @@ class Command(BaseCommand):
         options = sorted(MovieSuggestion.objects.all(), key=lambda x: x.get_score)[0:3]
 
         option_text = [str(x) for x in options]
-        option_nums = [x.id for x in options]
+        option_nums = [x.imdb_id for x in options]
 
         r = bot.send_poll(message.chat.id, question=question, options=option_text, is_anonymous=False)
         p = PollArbitrary.objects.create(
             poll_id=r.poll.id,
             question=question,
-            options='__'.join([options_nums]),
+            options='__'.join([option_nums]),
             poll_type="removal"
         )
         p.save()
