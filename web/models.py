@@ -55,7 +55,10 @@ class MovieSuggestion(models.Model):
     def get_score(self):
         try:
             buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
-            year_debuff = (self.year - 2022) / 6 # TODO: "this" year.
+            if self.year < 1990:
+                year_debuff = -1
+            else:
+                year_debuff = 0
 
             # Exception for unreleased
             if self.runtime == 0:
