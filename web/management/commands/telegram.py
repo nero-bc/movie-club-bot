@@ -259,6 +259,8 @@ class Command(BaseCommand):
             self.countdown(message.chat.id, message.text.split())
         elif message.text.startswith('/remove'):
             self.send_removal_poll(message)
+        elif message.text.startswith('/remove-confirm'):
+            self.finalize_removal_poll(message)
         elif message.text.startswith('/rate'):
             self.send_rate_poll(message)
         elif message.text.startswith('/suggest'):
@@ -302,6 +304,11 @@ class Command(BaseCommand):
             poll_type="interest"
         )
         p.save()
+
+    def finalize_removal_poll(self, message):
+        # Get latest removal poll
+        p = PollArbitrary.objects.all().order_by('-poll_id')[0]
+        print(p.poll_id)
 
     def send_removal_poll(self, message):
         question = 'Pick one of these to DELETE from our watchlist.'
