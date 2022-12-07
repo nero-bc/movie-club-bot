@@ -305,7 +305,7 @@ class Command(BaseCommand):
         p = PollArbitrary.objects.create(
             poll_id=r.poll.id,
             question=question,
-            options='__'.join([options_nums),
+            options='__'.join([options_nums]),
             poll_type="removal"
         )
         p.save()
