@@ -4,8 +4,8 @@ from django.contrib import admin
 from .models import *
 
 class MovieSuggestionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'year', 'rating', 'watched', 'suggested_by', 'get_score')
-    list_filter = ('year', 'watched', 'suggested_by')
+    list_display = ('title', 'year', 'rating', 'status', 'suggested_by', 'get_score')
+    list_filter = ('year', 'status', 'suggested_by')
 
 admin.site.register(MovieSuggestion, MovieSuggestionAdmin)
 

@@ -10,8 +10,8 @@ from django.contrib.auth.models import User
 def index(request):
     template = loader.get_template('list.html')
     context = {
-        'unwatched': sorted(MovieSuggestion.objects.filter(watched=False), key=lambda x: -x.get_score),
-        'watched': MovieSuggestion.objects.filter(watched=True).order_by('-watched_date')
+        'unwatched': sorted(MovieSuggestion.objects.filter(status=0), key=lambda x: -x.get_score),
+        'watched': MovieSuggestion.objects.filter(status=1).order_by('-status_changed_date')
     }
     return HttpResponse(template.render(context, request))
 

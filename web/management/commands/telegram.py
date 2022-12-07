@@ -119,6 +119,8 @@ class Command(BaseCommand):
         fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
         bot.reply_to(message, fmt_msg)
 
+    def poll_remove(self, )
+
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
             try:
@@ -155,7 +157,7 @@ class Command(BaseCommand):
 
 
     def suggest(self, message):
-        unwatched = sorted(MovieSuggestion.objects.filter(watched=False), key=lambda x: -x.get_score)[0:3]
+        unwatched = sorted(MovieSuggestion.objects.filter(status=0), key=lambda x: -x.get_score)[0:3]
         msg = "Top 3 films to watch:\n\n"
         for film in unwatched:
             msg += f"{film.title} ({film.year})\n"
@@ -286,6 +288,21 @@ class Command(BaseCommand):
             poll_type="interest"
         )
         p.save()
+
+    def send_removal_poll(self, message):
+        question = f'Pick one of these to DELETE from our watchlist.'
+        options = ['💯', '🆗', '🤷‍♀️🤷🤷‍♂️ meh', '🤬hatewatch', '🚫veto🙅']
+
+        r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
+        p = Poll.objects.create(
+            poll_id=r.poll.id,
+            film=film,
+            question=question,
+            options='__'.join(options),
+            poll_type="interest"
+        )
+        p.save()
+
     def send_rate_poll(self, message: telebot.types.Message):
         parts = message.text.split()
         if len(parts) != 2:
@@ -298,8 +315,8 @@ class Command(BaseCommand):
             bot.send_message(message.chat.id, "Unknown film")
             return
 
-        film.watched = True
-        film.watched_date = timezone.now()
+        film.status = 1
+        film.status_changed_date = timezone.now()
         film.save()
 
         question = f'What did you think of {film}? Give it a rating.'

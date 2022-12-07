@@ -37,10 +37,13 @@ class MovieSuggestion(models.Model):
     meta = models.TextField(null=True)
 
     added = models.DateTimeField(auto_now_add=True)
-
+    
     # Our info
-    watched = models.BooleanField()
-    watched_date = models.DateTimeField(null=True, blank=True)
+    status = models.IntegerField()
+    # 0: New
+    # 1: Watched
+    # 2: Removed
+    status_changed_date = models.DateTimeField(null=True, blank=True)
 
     # Scoring
     # expressed_interest = models.ManyToManyField(User, blank=True)
@@ -152,7 +155,7 @@ class MovieSuggestion(models.Model):
             genre=g_s,
             meta=json.dumps(movie_details),
             # This is new
-            watched=False,
+            status=0,
             suggested_by=None,
             # expressed_interest=[],
         )
