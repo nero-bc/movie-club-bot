@@ -305,7 +305,7 @@ class Command(BaseCommand):
 
     def send_removal_poll(self, message):
         question = 'Pick one of these to DELETE from our watchlist.'
-        options = sorted(MovieSuggestion.objects.all(), key=lambda x: x.get_score)[0:3]
+        options = sorted(MovieSuggestion.objects.all(), key=lambda x: x.get_score)[0:2]
 
         option_text = [f"{x.title} ({x.year}), added {x.days_since_added} days ago, rating {x.rating}" for x in options]
         option_nums = [str(x.imdb_id) for x in options]
