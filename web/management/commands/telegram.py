@@ -119,8 +119,6 @@ class Command(BaseCommand):
         fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
         bot.reply_to(message, fmt_msg)
 
-    def poll_remove(self, )
-
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
             try:
@@ -245,6 +243,8 @@ class Command(BaseCommand):
             self.change_password(message)
         elif message.text.startswith('/countdown'):
             self.countdown(message.chat.id, message.text.split())
+        elif message.text.startswith('/remove'):
+            self.send_removal_poll(message)
         elif message.text.startswith('/rate'):
             self.send_rate_poll(message)
         elif message.text.startswith('/suggest'):
@@ -291,15 +291,15 @@ class Command(BaseCommand):
 
     def send_removal_poll(self, message):
         question = f'Pick one of these to DELETE from our watchlist.'
-        options = ['💯', '🆗', '🤷‍♀️🤷🤷‍♂️ meh', '🤬hatewatch', '🚫veto🙅']
+        options = ['a', 'b', 'c']
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
         p = Poll.objects.create(
             poll_id=r.poll.id,
-            film=film,
+            film=None,
             question=question,
             options='__'.join(options),
-            poll_type="interest"
+            poll_type="remove"
         )
         p.save()
 
