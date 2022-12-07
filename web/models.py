@@ -54,10 +54,20 @@ class MovieSuggestion(models.Model):
     @property
     def get_score(self):
         try:
-            year_debuff = (self.year - 2022) / 6 # TODO: "this" year.
-            runtime_debuff = abs(self.runtime - 90) / 10
             buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
-            vote_adj = math.log10(self.ratings) * self.rating + year_debuff
+            year_debuff = (self.year - 2022) / 6 # TODO: "this" year.
+
+            # Exception for unreleased
+            if self.runtime == 0:
+                runtime_debuff = 20 / 10
+            else:
+                runtime_debuff = abs(self.runtime - 90) / 10
+            # Exception for unreleased
+            if self.ratings > 0:
+                vote_adj = 5 * 5 + year_debuff
+            else:
+                vote_adj = math.log10(self.ratings) * self.rating + year_debuff
+
             old = self.days_since_added / 20
             # Ensure this is non-zero even if we balance it perfectly.
             interests = sum([i.score for i in self.interest_set.all()]) + 0.5
