@@ -279,6 +279,6 @@ class AntiInterest(models.Model):
 
 
 class Event(models.Model):
-    event_id = models.CharField(max_length=32)
+    event_id = models.TextField() # fuck it whatever
     added = models.DateTimeField(auto_now_add=True)
     value = models.TextField()
