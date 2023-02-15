@@ -46,3 +46,28 @@ def profile(request, acct):
         'ratings': u.criticrating_set.all(),
     }
     return HttpResponse(template.render(context, request))
+
+
+def status(request):
+    template = loader.get_template('status.html')
+    r = requests.get('https://ipinfo.io/json').json()
+    org = r['org']
+    ip = r['ip']
+    if 'GIT_REV' in os.environ:
+        url = f"https://github.com/hexylena/movie-club-bot/commit/{os.environ['GIT_REV']}"
+    else:
+        url = "https://github.com/hexylena/movie-club-bot/"
+
+    data = {
+        'Org': org,
+        'IP': ip,
+        'URL': url,
+        'Execution Time': datetime.timedelta(seconds=time.process_time()),
+        'Uptime': datetime.timedelta(seconds=time.time() - START_TIME),
+        'Chat Type': message.chat.type,
+        'Chat ID': message.chat.id,
+        'Chat sender': message.from_user.id,
+    }
+
+    fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
+    return HttpResponse(template.render({"msg": fmt_msg}))
