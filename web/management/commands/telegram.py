@@ -6,7 +6,7 @@ import traceback
 from django.contrib.auth.models import Permission
 import uuid
 
-from web.models import CriticRating, Interest, MovieSuggestion, Poll, PollArbitrary, AntiInterest
+from web.models import CriticRating, Interest, MovieSuggestion, Poll, PollArbitrary, AntiInterest, Event
 
 import datetime
 import json
