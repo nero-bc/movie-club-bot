@@ -1,52 +1,70 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import MovieSuggestion, CriticRating, Buff, Poll, PollArbitrary, Interest, AntiInterest, Event
+from .models import (
+    MovieSuggestion,
+    CriticRating,
+    Buff,
+    Poll,
+    PollArbitrary,
+    Interest,
+    AntiInterest,
+    Event,
+)
+
 
 class MovieSuggestionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'year', 'rating', 'status', 'suggested_by', 'get_score')
-    list_filter = ('year', 'status', 'suggested_by')
+    list_display = ("title", "year", "rating", "status", "suggested_by", "get_score")
+    list_filter = ("year", "status", "suggested_by")
+
 
 admin.site.register(MovieSuggestion, MovieSuggestionAdmin)
 
 
-
 class CriticRatingAdmin(admin.ModelAdmin):
-    list_display = ('user', 'film', 'score')
+    list_display = ("user", "film", "score")
+
 
 admin.site.register(CriticRating, CriticRatingAdmin)
 
 
 class BuffAdmin(admin.ModelAdmin):
-    list_display = ('short', 'name', 'value')
+    list_display = ("short", "name", "value")
+
 
 admin.site.register(Buff, BuffAdmin)
 
 
 class PollAdmin(admin.ModelAdmin):
-    list_display = ('film', 'question', 'created', 'poll_type')
+    list_display = ("film", "question", "created", "poll_type")
+
 
 admin.site.register(Poll, PollAdmin)
 
 
 class PollArbitraryAdmin(admin.ModelAdmin):
-    list_display = ('poll_id', 'metadata', 'question', 'options', 'created')
+    list_display = ("poll_id", "metadata", "question", "options", "created")
+
 
 admin.site.register(PollArbitrary, PollArbitraryAdmin)
 
 
 class AntiInterestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'film', 'poll_id')
+    list_display = ("user", "film", "poll_id")
+
+
 admin.site.register(AntiInterest, AntiInterestAdmin)
 
 
 class InterestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'film', 'score')
+    list_display = ("user", "film", "score")
+
 
 admin.site.register(Interest, InterestAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('event_id', 'added', 'value')
+    list_display = ("event_id", "added", "value")
+
 
 admin.site.register(Event, EventAdmin)

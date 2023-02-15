@@ -19,9 +19,10 @@ class Buff(models.Model):
 
     def __str__(self):
         if self.value < 0:
-            return f'-{self.short}'
+            return f"-{self.short}"
         else:
-            return f'+{self.short}'
+            return f"+{self.short}"
+
 
 # Create your models here.
 class MovieSuggestion(models.Model):
@@ -30,8 +31,8 @@ class MovieSuggestion(models.Model):
     # Meta
     title = models.TextField()
     year = models.IntegerField()
-    rating = models.FloatField() # The IMDB score
-    ratings = models.IntegerField() # The IMDB number of people rating it.
+    rating = models.FloatField()  # The IMDB score
+    ratings = models.IntegerField()  # The IMDB number of people rating it.
     runtime = models.IntegerField()
     genre = models.TextField(null=True, blank=True)
     meta = models.TextField(null=True)
@@ -49,12 +50,16 @@ class MovieSuggestion(models.Model):
     # expressed_interest = models.ManyToManyField(User, blank=True)
     buffs = models.ManyToManyField(Buff, blank=True)
 
-    suggested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='suggestion')
+    suggested_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="suggestion"
+    )
 
     @property
     def get_score(self):
         try:
-            buff_score = sum([buff.value for buff in self.buffs.all()])  # could be in db.
+            buff_score = sum(
+                [buff.value for buff in self.buffs.all()]
+            )  # could be in db.
             if self.year < 1990:
                 year_debuff = -1
             else:
@@ -115,11 +120,15 @@ class MovieSuggestion(models.Model):
 
     @property
     def get_rated_m1(self):
-        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -1]
+        return [
+            str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -1
+        ]
 
     @property
     def get_rated_m2(self):
-        return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -2]
+        return [
+            str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -2
+        ]
 
     @property
     def imdb_link(self):
@@ -130,31 +139,31 @@ class MovieSuggestion(models.Model):
 
         # This is gross and I hate it.
         try:
-            y_s = int(movie_details['datePublished'].split('-')[0])
+            y_s = int(movie_details["datePublished"].split("-")[0])
         except:
             y_s = 0
 
         try:
-            rv_s = movie_details['aggregateRating']['ratingValue']
+            rv_s = movie_details["aggregateRating"]["ratingValue"]
         except:
             rv_s = 0
 
         try:
-            rc_s = movie_details['aggregateRating']['ratingCount']
+            rc_s = movie_details["aggregateRating"]["ratingCount"]
         except:
             rc_s = 0
 
         try:
-            r_s = isodate.parse_duration(movie_details['duration']).seconds / 60
+            r_s = isodate.parse_duration(movie_details["duration"]).seconds / 60
         except:
             r_s = 0
 
         try:
-            g_s = ','.join(movie_details['genre'])
+            g_s = ",".join(movie_details["genre"])
         except:
-            g_s = ''
+            g_s = ""
 
-        self.title = movie_details['name'].replace("&apos;", "'")
+        self.title = movie_details["name"].replace("&apos;", "'")
         self.year = y_s
         self.rating = rv_s
         self.ratings = rc_s
@@ -170,39 +179,38 @@ class MovieSuggestion(models.Model):
         except cls.DoesNotExist:
             pass
 
-
         movie_details = get_ld_json(f"https://www.imdb.com/title/{imdb_id}/")
 
         # This is gross and I hate it.
         try:
-            y_s = int(movie_details['datePublished'].split('-')[0])
+            y_s = int(movie_details["datePublished"].split("-")[0])
         except:
             y_s = 0
 
         try:
-            rv_s = movie_details['aggregateRating']['ratingValue']
+            rv_s = movie_details["aggregateRating"]["ratingValue"]
         except:
             rv_s = 0
 
         try:
-            rc_s = movie_details['aggregateRating']['ratingCount']
+            rc_s = movie_details["aggregateRating"]["ratingCount"]
         except:
             rc_s = 0
 
         try:
-            r_s = isodate.parse_duration(movie_details['duration']).seconds / 60
+            r_s = isodate.parse_duration(movie_details["duration"]).seconds / 60
         except:
             r_s = 0
 
         try:
-            g_s = ','.join(movie_details['genre'])
+            g_s = ",".join(movie_details["genre"])
         except:
-            g_s = ''
+            g_s = ""
 
         movie = cls(
             # IMDB Metadata
             imdb_id=imdb_id,
-            title=movie_details['name'].replace("&apos;", "'"),
+            title=movie_details["name"].replace("&apos;", "'"),
             year=y_s,
             rating=rv_s,
             ratings=rc_s,
@@ -220,27 +228,28 @@ class MovieSuggestion(models.Model):
     def __str__(self):
         return f"{self.title} ({self.year})"
 
+
 class Interest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
 
     class Meta:
-        unique_together= (('user', 'film'),)
+        unique_together = (("user", "film"),)
 
     @property
     def score_e(self):
         return {
-            2: '💯',
-            1: '🆗',
-            0: '🤷',
-            -1: '🤬',
-            -2: '🚫',
-        }.get(self.score, '?')
-
+            2: "💯",
+            1: "🆗",
+            0: "🤷",
+            -1: "🤬",
+            -2: "🚫",
+        }.get(self.score, "?")
 
     def __str__(self):
         return f"{self.user.first_name}|{self.film}|{self.score}"
+
 
 class CriticRating(models.Model):
     # Us, we're the critics.
@@ -249,7 +258,7 @@ class CriticRating(models.Model):
     score = models.IntegerField()
 
     class Meta:
-        unique_together= (('user', 'film'),)
+        unique_together = (("user", "film"),)
 
     def __str__(self):
         return f"{self.user.first_name}|{self.film}"
@@ -266,11 +275,14 @@ class Poll(models.Model):
 
 class PollArbitrary(models.Model):
     poll_id = models.TextField(primary_key=True)
-    metadata = models.TextField(blank=True, null=True) # Equivalent to 'Film', but, arbitrary
+    metadata = models.TextField(
+        blank=True, null=True
+    )  # Equivalent to 'Film', but, arbitrary
     question = models.TextField()
     options = models.TextField()
     poll_type = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
+
 
 class AntiInterest(models.Model):
     poll_id = models.TextField()
@@ -279,6 +291,6 @@ class AntiInterest(models.Model):
 
 
 class Event(models.Model):
-    event_id = models.TextField() # fuck it whatever
+    event_id = models.TextField()  # fuck it whatever
     added = models.DateTimeField(auto_now_add=True)
     value = models.TextField()
