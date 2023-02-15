@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Movie Club
+{% endblock %}
+
+{% block content %}
+<h1>Movie List</h1>
+<ul>
+	{% for t in tennant_ids %}
+	<li><a href="t/{{ t }}">{{ t }}</a></li>
+	{% endfor %}
+</ul>
+
+{% endblock %}

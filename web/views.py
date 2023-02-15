@@ -13,14 +13,24 @@ from django.contrib.auth.models import User
 START_TIME = time.time()
 
 
-# Create your views here.
-def index(request):
+def tennant_list(request):
+    template = loader.get_template("home.html")
+    tennant_ids = MovieSuggestion.objects.values_list('tennant_id', flat=True)
+    tennant_ids = list(set(tennant_ids))
+
+    context = {
+        "tennant_ids": tennant_ids
+    }
+    return HttpResponse(template.render(context, request))
+
+
+def index(request, acct):
     template = loader.get_template("list.html")
     context = {
         "unwatched": sorted(
-            MovieSuggestion.objects.filter(status=0), key=lambda x: -x.get_score
+            MovieSuggestion.objects.filter(tennant_id=str(acct), status=0), key=lambda x: -x.get_score
         ),
-        "watched": MovieSuggestion.objects.filter(status=1).order_by(
+        "watched": MovieSuggestion.objects.filter(tennant_id=str(acct), status=1).order_by(
             "-status_changed_date"
         ),
     }
