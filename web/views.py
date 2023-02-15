@@ -86,12 +86,26 @@ def status(request):
 def manifest(request):
     manifest = {
         "name": "Movie Club Bot",
-        "short_name": "MCB",
         "theme_color": "#f32",
         "background_color": "#fff",
         "display": "minimal-ui",
         "scope": "/",
         "start_url": "/",
+        "shortcuts": [
+            {
+              "name": "Bot Status",
+              "short_name": "Status",
+              "description": "View server status information",
+              "url": "/status",
+            },
+            {
+              "name": "Admin",
+              "short_name": "Admin Page",
+              "description": "Login to the admin page",
+              "url": "/admin/",
+            }
+        ],
+        "description": "Movie Club Bot"
     }
 
     return JsonResponse(manifest)
