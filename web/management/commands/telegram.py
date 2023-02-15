@@ -175,6 +175,8 @@ class Command(BaseCommand):
             msg += f"{film.title} ({film.year})\n"
             msg += f"  ⭐️{film.rating}\n"
             msg += f"  ⏰{film.runtime}\n"
+            msg += f"  🎬{film.imdb_link}\n"
+            msg += f"  🎟{film.get_buffs}\n"
             msg += f"  📕{film.genre}\n\n"
 
         bot.send_message(message.chat.id, msg)

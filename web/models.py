@@ -121,6 +121,10 @@ class MovieSuggestion(models.Model):
     def get_rated_m2(self):
         return [str(i.user)[0].upper() for i in self.interest_set.all() if i.score == -2]
 
+    @property
+    def imdb_link(self):
+        return f"https://www.imdb.com/title/{self.imdb_id}/"
+
     def update_from_imdb(self):
         movie_details = get_ld_json(f"https://www.imdb.com/title/{self.imdb_id}/")
 
