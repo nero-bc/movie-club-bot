@@ -253,12 +253,15 @@ class Command(BaseCommand):
             ]))
         # Ignore me adding /s later
         elif message.text.startswith('/debug'):
+            self.log('debug')
             self.locate(message)
         elif message.text.startswith('/status'):
+            self.log('status')
             self.locate(message)
         elif message.text.startswith('/passwd'):
             self.change_password(message)
         elif message.text.startswith('/countdown'):
+            self.log('countdown', message.text.split())
             self.countdown(message.chat.id, message.text.split())
         elif message.text.startswith('/remove'):
             self.send_removal_poll(message)
@@ -270,6 +273,8 @@ class Command(BaseCommand):
             self.suggest(message)
         elif message.text.startswith('/update'):
             self.update_imdb_meta(message)
+        elif message.text.startswith('/wrapped'):
+            self.wrapped(message)
         elif message.text.startswith('/s'):
             return
         elif self.is_gpt3(message.text):
@@ -341,6 +346,15 @@ class Command(BaseCommand):
             poll_type="removal"
         )
         p.save()
+
+    def wrapped(self):
+        pass
+
+    def log(key, value=""):
+        Event.objects.create(
+            event_id=key,
+            value=value,
+        )
 
     def send_rate_poll(self, message: telebot.types.Message):
         parts = message.text.split()

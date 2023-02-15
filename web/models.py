@@ -276,3 +276,9 @@ class AntiInterest(models.Model):
     poll_id = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
+
+
+class Event(models.Model):
+    event_id = models.CharField(max_length=32)
+    added = models.DateTimeField(auto_now_add=True)
+    value = models.TextField()
