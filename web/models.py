@@ -175,9 +175,9 @@ class MovieSuggestion(models.Model):
         self.save()
 
     @classmethod
-    def from_imdb(cls, imdb_id):
+    def from_imdb(cls, tennant_id, imdb_id):
         try:
-            return cls.objects.get(imdb_id=imdb_id)
+            return cls.objects.get(tennant_id=tennant_id, imdb_id=imdb_id)
         except cls.DoesNotExist:
             pass
 
@@ -212,6 +212,7 @@ class MovieSuggestion(models.Model):
         movie = cls(
             # IMDB Metadata
             imdb_id=imdb_id,
+            tennant_id=tennant_id, 
             title=movie_details["name"].replace("&apos;", "'"),
             year=y_s,
             rating=rv_s,
