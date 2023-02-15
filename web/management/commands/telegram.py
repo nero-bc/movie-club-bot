@@ -350,7 +350,7 @@ class Command(BaseCommand):
     def wrapped(self):
         pass
 
-    def log(key, value=""):
+    def log(self, key, value=""):
         Event.objects.create(
             event_id=key,
             value=value,
