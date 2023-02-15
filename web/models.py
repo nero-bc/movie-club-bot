@@ -13,6 +13,7 @@ User.__str__ = lambda self: self.first_name if self.first_name else self.usernam
 
 
 class Buff(models.Model):
+    tennant_id = models.CharField(max_length=64)
     short = models.CharField(max_length=8)
     name = models.TextField()
     value = models.FloatField()
@@ -26,6 +27,7 @@ class Buff(models.Model):
 # Create your models here.
 class MovieSuggestion(models.Model):
     imdb_id = models.CharField(max_length=64, primary_key=True)
+    tennant_id = models.CharField(max_length=64)
 
     # Meta
     title = models.TextField()
@@ -221,6 +223,7 @@ class MovieSuggestion(models.Model):
         return f"{self.title} ({self.year})"
 
 class Interest(models.Model):
+    tennant_id = models.CharField(max_length=64)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
@@ -243,6 +246,7 @@ class Interest(models.Model):
         return f"{self.user.first_name}|{self.film}|{self.score}"
 
 class CriticRating(models.Model):
+    tennant_id = models.CharField(max_length=64)
     # Us, we're the critics.
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
@@ -256,6 +260,7 @@ class CriticRating(models.Model):
 
 
 class Poll(models.Model):
+    tennant_id = models.CharField(max_length=64)
     poll_id = models.TextField(primary_key=True)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
     question = models.TextField()
@@ -265,6 +270,7 @@ class Poll(models.Model):
 
 
 class PollArbitrary(models.Model):
+    tennant_id = models.CharField(max_length=64)
     poll_id = models.TextField(primary_key=True)
     metadata = models.TextField(blank=True, null=True) # Equivalent to 'Film', but, arbitrary
     question = models.TextField()
@@ -273,12 +279,14 @@ class PollArbitrary(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
 class AntiInterest(models.Model):
+    tennant_id = models.CharField(max_length=64)
     poll_id = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(MovieSuggestion, on_delete=models.CASCADE)
 
 
 class Event(models.Model):
+    tennant_id = models.CharField(max_length=64)
     event_id = models.CharField(max_length=32)
     added = models.DateTimeField(auto_now_add=True)
     value = models.TextField()
