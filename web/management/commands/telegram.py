@@ -205,7 +205,7 @@ class Command(BaseCommand):
                 user = find_user(message.from_user)
 
                 # Process details
-                movie = MovieSuggestion.from_imdb(tennant_id=str(message.chat.id), m)
+                movie = MovieSuggestion.from_imdb(tennant_id=str(message.chat.id), imdb_id=m)
                 movie_details = json.loads(movie.meta)
 
                 msg = f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}"
