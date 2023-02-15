@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import MovieSuggestion, CriticRating, Buff, Poll, PollArbitrary, Interest, AntiInterest
+from .models import MovieSuggestion, CriticRating, Buff, Poll, PollArbitrary, Interest, AntiInterest, Event
 
 class MovieSuggestionAdmin(admin.ModelAdmin):
     list_display = ('title', 'year', 'rating', 'status', 'suggested_by', 'get_score')
