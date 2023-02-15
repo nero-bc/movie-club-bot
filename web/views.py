@@ -4,6 +4,7 @@ from .models import MovieSuggestion
 from django.template import loader
 import requests
 import datetime
+import time
 import os
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -29,7 +30,7 @@ def index(request):
 def profile(request, acct):
     template = loader.get_template("profile.html")
     u = User.objects.get(username=acct)
-    suggested = u.moviesuggestion_set.all().order_by("-added")
+    suggested = u.suggestion.all().order_by("-added")
 
     genres = collections.Counter()
 
