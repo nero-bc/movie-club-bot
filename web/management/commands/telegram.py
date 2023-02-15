@@ -43,11 +43,12 @@ def handle_user_response(response):
 
         print(user_id, poll_id, option_ids, poll)
         try:
-            cr = CriticRating.objects.get(user=user, film=film)
+            cr = CriticRating.objects.get(tennant_id=poll.tennant_id, user=user, film=film)
             cr.score = critic_rating
             cr.save()
         except CriticRating.DoesNotExist:
             cr = CriticRating.objects.create(
+                tennant_id=poll.tennant_id,
                 user=user,
                 film=film,
                 score=critic_rating,
@@ -61,6 +62,7 @@ def handle_user_response(response):
         print(interest)
 
         ci = Interest.objects.create(
+            tennant_id=poll.tennant_id,
             user=user,
             film=film,
             score=interest,
@@ -69,8 +71,9 @@ def handle_user_response(response):
     elif poll.poll_type == 'removal':
         # tt8064418__tt7286966__tt4682266 [1] Helena
         tt_id = poll.options.split('__')[option_ids[0]]
-        film = MovieSuggestion.objects.get(imdb_id=tt_id)
+        film = MovieSuggestion.objects.get(tennant_id=poll.tennant_id, imdb_id=tt_id)
         ai = AntiInterest.objects.create(
+            tennant_id=poll.tennant_id, 
             poll_id=poll.poll_id,
             user=user,
             film=film,
@@ -169,7 +172,7 @@ class Command(BaseCommand):
 
 
     def suggest(self, message):
-        unwatched = sorted(MovieSuggestion.objects.filter(status=0), key=lambda x: -x.get_score)[0:3]
+        unwatched = sorted(MovieSuggestion.objects.filter(tennant_id=str(message.chat.id), status=0), key=lambda x: -x.get_score)[0:3]
         msg = "Top 3 films to watch:\n\n"
         for film in unwatched:
             msg += f"{film.title} ({film.year})\n"
@@ -188,7 +191,7 @@ class Command(BaseCommand):
         for m in imdb_link.findall(message.text):
             # bot.send_message(message.chat.id, f"Received {m}")
             try:
-                movie = MovieSuggestion.objects.get(imdb_id=m)
+                movie = MovieSuggestion.objects.get(tennant_id=str(message.chat.id), imdb_id=m)
                 resp = f"Suggested by {movie.suggested_by} on {movie.added.strftime('%B %m, %Y')}\nVotes: "
                 for v in movie.interest_set.all():
                     resp += f"{v.score_e}"
@@ -202,7 +205,7 @@ class Command(BaseCommand):
                 user = find_user(message.from_user)
 
                 # Process details
-                movie = MovieSuggestion.from_imdb(m)
+                movie = MovieSuggestion.from_imdb(tennant_id=str(message.chat.id), m)
                 movie_details = json.loads(movie.meta)
 
                 msg = f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}"
@@ -232,6 +235,7 @@ class Command(BaseCommand):
             return False
 
     def command_dispatch(self, message):
+        tennant_id = str(message.chat.id)
         if message.chat.id != -627602564:
             print(message)
 
@@ -253,15 +257,15 @@ class Command(BaseCommand):
             ]))
         # Ignore me adding /s later
         elif message.text.startswith('/debug'):
-            self.log('debug')
+            self.log(tennant_id, 'debug')
             self.locate(message)
         elif message.text.startswith('/status'):
-            self.log('status')
+            self.log(tennant_id, 'status')
             self.locate(message)
         elif message.text.startswith('/passwd'):
             self.change_password(message)
         elif message.text.startswith('/countdown'):
-            self.log('countdown', message.text.split())
+            self.log(tennant_id, 'countdown', message.text.split())
             self.countdown(message.chat.id, message.text.split())
         elif message.text.startswith('/remove'):
             self.send_removal_poll(message)
@@ -307,6 +311,7 @@ class Command(BaseCommand):
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
         p = Poll.objects.create(
+            tennant_id=str(message.chat.id),
             poll_id=r.poll.id,
             film=film,
             question=question,
@@ -316,13 +321,13 @@ class Command(BaseCommand):
         p.save()
 
     def update_imdb_meta(self, message):
-        for m in MovieSuggestion.objects.filter(rating=0):
+        for m in MovieSuggestion.objects.filter(tennant_id=str(message.chat.id), rating=0):
             m.update_from_imdb()
             bot.send_message(message.chat.id, f"Updating {m} from imdb")
 
     def finalize_removal_poll(self, message):
         # Get latest removal poll
-        p = PollArbitrary.objects.all().order_by('-poll_id')[0]
+        p = PollArbitrary.objects.filter(tennant_id=str(message.chat.id)).order_by('-poll_id')[0]
         print(p.poll_id)
 
     def send_removal_poll(self, message):
@@ -339,6 +344,7 @@ class Command(BaseCommand):
 
         r = bot.send_poll(message.chat.id, question=question, options=option_text, is_anonymous=False)
         p = PollArbitrary.objects.create(
+            tennant_id=str(message.chat.id),
             poll_id=r.poll.id,
             question=question,
             metadata=message.chat.id,
@@ -350,8 +356,9 @@ class Command(BaseCommand):
     def wrapped(self):
         pass
 
-    def log(key, value=""):
+    def log(tennant_id, key, value=""):
         Event.objects.create(
+            tennant_id=str(message.chat.id),
             event_id=key,
             value=value,
         )
@@ -363,7 +370,7 @@ class Command(BaseCommand):
             return
 
         try:
-            film = MovieSuggestion.objects.get(imdb_id=parts[1])
+            film = MovieSuggestion.objects.get(tennant_id=str(message.chat.id), imdb_id=parts[1])
         except:
             bot.send_message(message.chat.id, "Unknown film")
             return
@@ -377,6 +384,7 @@ class Command(BaseCommand):
 
         r = bot.send_poll(message.chat.id, question=question, options=options, is_anonymous=False)
         Poll.objects.create(
+            tennant_id=str(message.chat.id), 
             poll_id=r.poll.id,
             film=film,
             question=question,
