@@ -44,3 +44,9 @@ class InterestAdmin(admin.ModelAdmin):
     list_display = ('user', 'film', 'score')
 
 admin.site.register(Interest, InterestAdmin)
+
+
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('event_id', 'added', 'value')
+
+admin.site.register(Event, EventAdmin)
