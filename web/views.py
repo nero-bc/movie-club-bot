@@ -2,6 +2,7 @@ from django.shortcuts import render
 import collections
 from .models import MovieSuggestion
 from django.template import loader
+import requests
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 
