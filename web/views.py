@@ -3,9 +3,13 @@ import collections
 from .models import MovieSuggestion
 from django.template import loader
 import requests
+import datetime
+import os
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+
+START_TIME = time.time()
 
 
 # Create your views here.
@@ -72,9 +76,6 @@ def status(request):
         "URL": url,
         "Execution Time": datetime.timedelta(seconds=time.process_time()),
         "Uptime": datetime.timedelta(seconds=time.time() - START_TIME),
-        "Chat Type": message.chat.type,
-        "Chat ID": message.chat.id,
-        "Chat sender": message.from_user.id,
     }
 
     fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
