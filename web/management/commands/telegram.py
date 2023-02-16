@@ -358,7 +358,7 @@ class Command(BaseCommand):
 
     def log(self, tennant_id, key, value=""):
         Event.objects.create(
-            tennant_id=str(message.chat.id),
+            tennant_id=str(tennant_id),
             event_id=key,
             value=value,
         )
