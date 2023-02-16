@@ -224,7 +224,7 @@ class MovieSuggestion(models.Model):
             status=0,
             suggested_by=None,
             # expressed_interest=[],
-            added=now()
+            added=now(),
         )
         time.sleep(2 + random.random())
         return movie

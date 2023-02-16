@@ -15,12 +15,10 @@ START_TIME = time.time()
 
 def tennant_list(request):
     template = loader.get_template("home.html")
-    tennant_ids = MovieSuggestion.objects.values_list('tennant_id', flat=True)
+    tennant_ids = MovieSuggestion.objects.values_list("tennant_id", flat=True)
     tennant_ids = list(set(tennant_ids))
 
-    context = {
-        "tennant_ids": tennant_ids
-    }
+    context = {"tennant_ids": tennant_ids}
     return HttpResponse(template.render(context, request))
 
 
@@ -28,11 +26,12 @@ def index(request, acct):
     template = loader.get_template("list.html")
     context = {
         "unwatched": sorted(
-            MovieSuggestion.objects.filter(tennant_id=str(acct), status=0), key=lambda x: -x.get_score
+            MovieSuggestion.objects.filter(tennant_id=str(acct), status=0),
+            key=lambda x: -x.get_score,
         ),
-        "watched": MovieSuggestion.objects.filter(tennant_id=str(acct), status=1).order_by(
-            "-status_changed_date"
-        ),
+        "watched": MovieSuggestion.objects.filter(
+            tennant_id=str(acct), status=1
+        ).order_by("-status_changed_date"),
     }
     return HttpResponse(template.render(context, request))
 
@@ -103,19 +102,19 @@ def manifest(request):
         "start_url": "/",
         "shortcuts": [
             {
-              "name": "Bot Status",
-              "short_name": "Status",
-              "description": "View server status information",
-              "url": "/status",
+                "name": "Bot Status",
+                "short_name": "Status",
+                "description": "View server status information",
+                "url": "/status",
             },
             {
-              "name": "Admin",
-              "short_name": "Admin Page",
-              "description": "Login to the admin page",
-              "url": "/admin/",
-            }
+                "name": "Admin",
+                "short_name": "Admin Page",
+                "description": "Login to the admin page",
+                "url": "/admin/",
+            },
         ],
-        "description": "Movie Club Bot"
+        "description": "Movie Club Bot",
     }
 
     return JsonResponse(manifest)
