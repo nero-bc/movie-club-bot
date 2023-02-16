@@ -212,7 +212,7 @@ class MovieSuggestion(models.Model):
         movie = cls(
             # IMDB Metadata
             imdb_id=imdb_id,
-            tennant_id=tennant_id, 
+            tennant_id=tennant_id,
             title=movie_details["name"].replace("&apos;", "'"),
             year=y_s,
             rating=rv_s,
@@ -224,6 +224,7 @@ class MovieSuggestion(models.Model):
             status=0,
             suggested_by=None,
             # expressed_interest=[],
+            added=now()
         )
         time.sleep(2 + random.random())
         return movie
