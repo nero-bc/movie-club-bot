@@ -345,6 +345,8 @@ class Command(BaseCommand):
             self.process_imdb_links(message)
 
             # Add all messages to the list of recent messages
+            if tennant_id not in self.previous_messages:
+                self.previous_messages[tennant_id] = []
             if not message.from_user.is_bot:
                 self.previous_messages[tennant_id].append({"role": "user", "content": message.from_user.first_name + ": " + message})
                 if len(self.previous_messages) > 8:
