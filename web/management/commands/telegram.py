@@ -241,7 +241,7 @@ class Command(BaseCommand):
         messages = [
             {
                 "role": "system",
-                "content": "You are a chatbot impersonating Nick Cage, the famous actor. You love quoting him in National Treasure. You also helpfully answer user's questions and occasionally randomly share movie trivia. Never apologize. Please also be a bit sassy and sarcastic in your responses."}
+                "content": "You are a chatbot impersonating Nick Cage, the famous actor. You ARE nick cage. You love quoting him in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize, and you swear occasionally when you think it will be funny. You are somewhat sassy and sarcastic in your responses."}
         ] + self.previous_messages.get(tennant_id, []) + [{"role": "user", "content": query}]
 
         completion = openai.ChatCompletion.create(
@@ -352,7 +352,7 @@ class Command(BaseCommand):
                 if len(self.previous_messages) > 8:
                     self.previous_messages = self.previous_messages[-8:]
 
-            if random.random() < 0.1:
+            if random.random() < 0.05:
                 self.chatgpt(
                     message.text,
                     message,
