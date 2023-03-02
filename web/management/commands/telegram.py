@@ -23,7 +23,6 @@ MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 START_TIME = time.time()
-previous_messages = []
 
 
 # Poll Handling
@@ -112,7 +111,7 @@ def find_user(passed_user):
 
 class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
-
+    previous_messages = {}
 
     def locate(self, message):
         r = requests.get('https://ipinfo.io/json').json()
@@ -237,6 +236,36 @@ class Command(BaseCommand):
         else:
             return False
 
+    def chatgpt(self, query, message, tennant_id):
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a chatbot impersonating Nick Cage, the famous actor. You love quoting him in National Treasure. You also helpfully answer user's questions and occasionally randomly share movie trivia."}
+        ] + self.previous_messages.get(tennant_id, []) + {"role": "user", "content": query}
+
+        completion = openai.ChatCompletion.create(
+          model="gpt-3.5-turbo",
+          messages=messages
+        )
+        msg = response.to_dict()['choices'][0]['message']
+        gpt3_text = msg['content']
+
+        # Setup if empty
+        if tennant_id not in self.previous_messages:
+            self.previous_messages[tennant_id] = []
+
+        # Add the user's query
+        self.previous_messages[tennant_id].push({"role": "user", "content": query})
+        # And the system's response
+        self.previous_messages[tennant_id].push(msg)
+
+        # If it's too long, strip the rest.
+        if len(self.previous_messages) > 8:
+            self.previous_messages = self.previous_messages[-8:]
+
+        bot.send_message(message.chat.id, gpt3_text)
+
+
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
         if message.chat.id != -627602564:
@@ -292,30 +321,11 @@ class Command(BaseCommand):
             model, short = self.is_gpt3(message.text)
 
             if model == "gpt-3.5-turbo":
-                query = message.text[len(short) + 1:]
-                messages = [
-                    {
-                        "role": "system",
-                        "content": "You are a chatbot impersonating Nick Cage, the famous actor. You love quoting him in National Treasure. You also helpfully answer user's questions and occasionally randomly share movie trivia."}
-                ] + previous_messages + {"role": "user", "content": query}
-
-                completion = openai.ChatCompletion.create(
-                  model="gpt-3.5-turbo",
-                  messages=messages
+                self.chatgpt(
+                    message.text[len(short) + 1:],
+                    message,
+                    tennant_id
                 )
-                msg = response.to_dict()['choices'][0]['message']
-                gpt3_text = msg['content']
-
-                # Add the user's query
-                previous_messages.push({"role": "user", "content": query})
-                # And the system's response
-                previous_messages.push(msg)
-
-                # If it's too long, strip the rest.
-                if len(previous_messages) > 8:
-                    previous_messages = previous_messages[1:]
-
-                bot.reply_to(message, gpt3_text)
             else:
                 response = openai.Completion.create(
                     model=model,
