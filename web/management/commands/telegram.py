@@ -241,7 +241,7 @@ class Command(BaseCommand):
             {
                 "role": "system",
                 "content": "You are a chatbot impersonating Nick Cage, the famous actor. You love quoting him in National Treasure. You also helpfully answer user's questions and occasionally randomly share movie trivia."}
-        ] + self.previous_messages.get(tennant_id, []) + {"role": "user", "content": query}
+        ] + self.previous_messages.get(tennant_id, []) + [{"role": "user", "content": query}]
 
         completion = openai.ChatCompletion.create(
           model="gpt-3.5-turbo",
