@@ -348,7 +348,7 @@ class Command(BaseCommand):
             if tennant_id not in self.previous_messages:
                 self.previous_messages[tennant_id] = []
             if not message.from_user.is_bot:
-                self.previous_messages[tennant_id].append({"role": "user", "content": message.from_user.first_name + ": " + message})
+                self.previous_messages[tennant_id].append({"role": "user", "content": message.from_user.first_name + ": " + message.text})
                 if len(self.previous_messages) > 8:
                     self.previous_messages = self.previous_messages[-8:]
 
