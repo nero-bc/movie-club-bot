@@ -256,9 +256,9 @@ class Command(BaseCommand):
             self.previous_messages[tennant_id] = []
 
         # Add the user's query
-        self.previous_messages[tennant_id].push({"role": "user", "content": query})
+        self.previous_messages[tennant_id].append({"role": "user", "content": query})
         # And the system's response
-        self.previous_messages[tennant_id].push(msg)
+        self.previous_messages[tennant_id].append(msg)
 
         # If it's too long, strip the rest.
         if len(self.previous_messages) > 8:
@@ -346,7 +346,7 @@ class Command(BaseCommand):
 
             # Add all messages to the list of recent messages
             if not message.from_user.is_bot:
-                self.previous_messages[tennant_id].push({"role": "user", "content": message})
+                self.previous_messages[tennant_id].append({"role": "user", "content": message.from_user.first_name + ": " + message})
                 if len(self.previous_messages) > 8:
                     self.previous_messages = self.previous_messages[-8:]
 
