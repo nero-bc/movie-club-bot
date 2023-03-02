@@ -11,6 +11,7 @@ from web.models import CriticRating, Interest, MovieSuggestion, Poll, PollArbitr
 import datetime
 import json
 import os
+import random
 import re
 import requests
 import telebot
@@ -247,7 +248,7 @@ class Command(BaseCommand):
           model="gpt-3.5-turbo",
           messages=messages
         )
-        msg = response.to_dict()['choices'][0]['message']
+        msg = completion.to_dict()['choices'][0]['message']
         gpt3_text = msg['content']
 
         # Setup if empty
@@ -342,6 +343,20 @@ class Command(BaseCommand):
             bot.send_message(message.chat.id, "You talkin' to me? Well I don't understand ya, try again.")
         else:
             self.process_imdb_links(message)
+
+            # Add all messages to the list of recent messages
+            if not message.from_user.is_bot:
+                self.previous_messages[tennant_id].push({"role": "user", "content": message})
+                if len(self.previous_messages) > 8:
+                    self.previous_messages = self.previous_messages[-8:]
+
+            if random.random() < 0.1:
+                self.chatgpt(
+                    message.text,
+                    message,
+                    tennant_id
+                )
+
 
     def send_interest_poll(self, message, film):
         question = f'Do you wanna see {film}?'
