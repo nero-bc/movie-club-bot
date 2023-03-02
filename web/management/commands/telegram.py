@@ -23,6 +23,7 @@ MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 START_TIME = time.time()
+previous_messages = []
 
 
 # Poll Handling
@@ -231,6 +232,8 @@ class Command(BaseCommand):
             return ('text-curie-001', '/curie')
         elif text.startswith('/ada'):
             return ('text-ada-001', '/ada')
+        elif text.startswith('/cage'):
+            return ('gpt-3.5-turbo', '/cage')
         else:
             return False
 
@@ -286,20 +289,45 @@ class Command(BaseCommand):
                 bot.reply_to(message, "Prompt too short, please try something longer.")
                 return
 
-
             model, short = self.is_gpt3(message.text)
 
-            response = openai.Completion.create(
-                model=model,
-                prompt=message.text[len(short) + 1:],
-                temperature=0.7,
-                max_tokens=512,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
-            )
-            gpt3_text = response.to_dict()['choices'][0].text
-            bot.reply_to(message, "Prompt: " + message.text[len(short) + 1:] + gpt3_text)
+            if model == "gpt-3.5-turbo":
+                query = message.text[len(short) + 1:]
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a chatbot impersonating Nick Cage, the famous actor. You love quoting him in National Treasure. You also helpfully answer user's questions and occasionally randomly share movie trivia."}
+                ] + previous_messages + {"role": "user", "content": query}
+
+                completion = openai.ChatCompletion.create(
+                  model="gpt-3.5-turbo",
+                  messages=messages
+                )
+                msg = response.to_dict()['choices'][0]['message']
+                gpt3_text = msg['content']
+
+                # Add the user's query
+                previous_messages.push({"role": "user", "content": query})
+                # And the system's response
+                previous_messages.push(msg)
+
+                # If it's too long, strip the rest.
+                if len(previous_messages) > 8:
+                    previous_messages = previous_messages[1:]
+
+                bot.reply_to(message, gpt3_text)
+            else:
+                response = openai.Completion.create(
+                    model=model,
+                    prompt=message.text[len(short) + 1:],
+                    temperature=0.7,
+                    max_tokens=512,
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0
+                )
+                gpt3_text = response.to_dict()['choices'][0].text
+                bot.reply_to(message, "Prompt: " + message.text[len(short) + 1:] + gpt3_text)
         elif message.text.startswith('/'):
             bot.send_message(message.chat.id, "You talkin' to me? Well I don't understand ya, try again.")
         else:
