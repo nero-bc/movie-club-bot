@@ -24,6 +24,7 @@ MOVIE_VIEW = Permission.objects.get(name='Can view movie suggestion')
 MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 START_TIME = time.time()
+CHATGPT_CONTEXT = 20
 
 
 # Poll Handling
@@ -241,7 +242,7 @@ class Command(BaseCommand):
         messages = [
             {
                 "role": "system",
-                "content": "You are a chatbot impersonating Nick Cage, the famous actor. You ARE nick cage. You love quoting him in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize, and you swear occasionally when you think it will be funny. You are somewhat sassy and sarcastic in your responses."}
+                "content": f"You are a chatbot impersonating Nick Cage, the famous actor. You ARE nick cage. You love quoting him in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize, and you swear occasionally when you think it will be funny. You are somewhat sassy and sarcastic in your responses. You have {CHATGPT_CONTEXT} messages of context."}
         ] + self.previous_messages.get(tennant_id, []) + [{"role": "user", "content": query}]
 
         completion = openai.ChatCompletion.create(
@@ -261,8 +262,8 @@ class Command(BaseCommand):
         self.previous_messages[tennant_id].append(msg)
 
         # If it's too long, strip the rest.
-        if len(self.previous_messages) > 8:
-            self.previous_messages = self.previous_messages[-8:]
+        if len(self.previous_messages) > CHATGPT_CONTEXT:
+            self.previous_messages = self.previous_messages[-CHATGPT_CONTEXT:]
 
         bot.send_message(message.chat.id, gpt3_text)
 
@@ -349,8 +350,8 @@ class Command(BaseCommand):
                 self.previous_messages[tennant_id] = []
             if not message.from_user.is_bot:
                 self.previous_messages[tennant_id].append({"role": "user", "content": message.from_user.first_name + ": " + message.text})
-                if len(self.previous_messages) > 8:
-                    self.previous_messages = self.previous_messages[-8:]
+                if len(self.previous_messages) > CHATGPT_CONTEXT:
+                    self.previous_messages = self.previous_messages[-CHATGPT_CONTEXT:]
 
             if random.random() < 0.05:
                 self.chatgpt(
