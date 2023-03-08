@@ -184,8 +184,8 @@ class Command(BaseCommand):
             if len(film.get_buffs) > 0:
                 msg += f"  🎟{film.get_buffs}\n"
             msg += f"  📕{film.genre}\n\n"
-
         bot.send_message(message.chat.id, msg)
+        self.chatgpt("Hey nick we're thinking of watching one of those three films. Which do you recommend and why?", message, str(message.chat.id))
 
 
     def process_imdb_links(self, message):
@@ -238,12 +238,30 @@ class Command(BaseCommand):
         else:
             return False
 
+    def filter_for_size(self, m):
+        # Must keep system
+        system = m[0]
+        # Must keep user prompt
+        user = m[-1]
+        # The prompts we want to iterate over
+        cullable = m[1:-1]
+        culled = []
+        # Most recent first
+        for i in cullable[::-1]:
+            if len(system['content']) + len(user['content']) + sum([len(x['content']) for x in culled]) + len(i['content']) > 4096:
+                # Return what's already in there
+                return [system] + culled + [user]
+            # Otherwise append
+            culled.append(i)
+
     def chatgpt(self, query, message, tennant_id):
         messages = [
             {
                 "role": "system",
-                "content": f"You are a chatbot impersonating Nick Cage, the famous actor. You ARE nick cage. You love quoting him in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize, and you swear occasionally when you think it will be funny. You are somewhat sassy and sarcastic in your responses. You have {CHATGPT_CONTEXT} messages of context."}
+                "content": f"You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses."}
         ] + self.previous_messages.get(tennant_id, []) + [{"role": "user", "content": query}]
+
+        messages = self.filter_for_size(messages)
 
         completion = openai.ChatCompletion.create(
           model="gpt-3.5-turbo",
