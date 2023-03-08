@@ -25,6 +25,9 @@ MOVIE_ADD = Permission.objects.get(name='Can add movie suggestion')
 MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 START_TIME = time.time()
 CHATGPT_CONTEXT = 20
+DEFAULT_PROMPT = """
+You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses.
+""".strip()
 
 # Wake up message
 bot.send_message(195671723, "Hey hexy I'm re-deployed")
@@ -116,6 +119,7 @@ def find_user(passed_user):
 class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
     previous_messages = {}
+    PROMPTS = {}
 
     def locate(self, message):
         r = requests.get('https://ipinfo.io/json').json()
@@ -258,10 +262,11 @@ class Command(BaseCommand):
         return [system] + culled[::-1] + [user]
 
     def chatgpt(self, query, message, tennant_id):
+        prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
         messages = [
             {
                 "role": "system",
-                "content": f"You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses."}
+                "content": prompt}
         ] + self.previous_messages.get(tennant_id, []) + [{"role": "user", "content": query}]
 
         messages = self.filter_for_size(messages)
@@ -310,6 +315,9 @@ class Command(BaseCommand):
                 '/babbage <text>',
                 '/curie <text>',
                 '/davinci <text>',
+                '# The Cage Factor',
+                '/prompt-get - see current prompt',
+                '/prompt-set - set current prompt',
             ]))
         # Ignore me adding /s later
         elif message.text.startswith('/debug'):
@@ -335,6 +343,10 @@ class Command(BaseCommand):
             self.update_imdb_meta(message)
         elif message.text.startswith('/wrapped'):
             self.wrapped(message)
+        elif message.text.startswith('/prompt-get'):
+            self.prompt_get(message)
+        elif message.text.startswith('/prompt-set'):
+            self.prompt_set(message)
         elif message.text.startswith('/s'):
             return
         elif self.is_gpt3(message.text):
@@ -380,6 +392,16 @@ class Command(BaseCommand):
                     tennant_id
                 )
 
+    def prompt_get(self, message):
+        tennant_id = str(message.chat.id)
+        prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
+        bot.reply_to(message, f"The current prompt is: {prompt}")
+
+    def prompt_set(self, message):
+        tennant_id = str(message.chat.id)
+        if len(message.text) > 20:
+            self.PROMPTS[tennant_id] = message.text
+            bot.reply_to(message, "OK, recorded")
 
     def send_interest_poll(self, message, film):
         question = f'Do you wanna see {film}?'
