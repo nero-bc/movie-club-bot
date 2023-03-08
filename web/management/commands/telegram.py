@@ -191,7 +191,9 @@ class Command(BaseCommand):
                 msg += f"  🎟{film.get_buffs}\n"
             msg += f"  📕{film.genre}\n\n"
         bot.send_message(message.chat.id, msg)
-        self.chatgpt("Hey nick we're thinking of watching one of those three films. Which do you recommend and why?", message, str(message.chat.id))
+
+        films = ", ".join([f"{film.title} ({film.year})" for film in unwatched])
+        self.chatgpt("Hey nick we're thinking of watching one of these three films: {films}. Which do you recommend and why?", message, str(message.chat.id))
 
 
     def process_imdb_links(self, message):
