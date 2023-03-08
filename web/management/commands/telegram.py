@@ -26,6 +26,8 @@ MOVIE_UPDATE = Permission.objects.get(name='Can change movie suggestion')
 START_TIME = time.time()
 CHATGPT_CONTEXT = 20
 
+# Wake up message
+bot.send_message(195671723, "Hey hexy I'm re-deployed")
 
 # Poll Handling
 def handle_user_response(response):
