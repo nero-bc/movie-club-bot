@@ -250,9 +250,10 @@ class Command(BaseCommand):
         for i in cullable[::-1]:
             if len(system['content']) + len(user['content']) + sum([len(x['content']) for x in culled]) + len(i['content']) > 4096:
                 # Return what's already in there
-                return [system] + culled + [user]
+                return [system] + culled[::-1] + [user]
             # Otherwise append
             culled.append(i)
+        return [system] + culled[::-1] + [user]
 
     def chatgpt(self, query, message, tennant_id):
         messages = [
@@ -275,15 +276,16 @@ class Command(BaseCommand):
             self.previous_messages[tennant_id] = []
 
         # Add the user's query
-        self.previous_messages[tennant_id].append({"role": "user", "content": query})
+        self.add_context({"role": "user", "content": query}, tennant_id)
         # And the system's response
-        self.previous_messages[tennant_id].append(msg)
-
-        # If it's too long, strip the rest.
-        if len(self.previous_messages) > CHATGPT_CONTEXT:
-            self.previous_messages = self.previous_messages[-CHATGPT_CONTEXT:]
+        self.add_context(msg, tennant_id)
 
         bot.send_message(message.chat.id, gpt3_text)
+
+    def add_context(self, msg, tennant_id):
+        self.previous_messages[tennant_id].append(msg)
+        if len(self.previous_messages[tennant_id]) > CHATGPT_CONTEXT:
+            self.previous_messages[tennant_id] = self.previous_messages[tennant_id][-CHATGPT_CONTEXT:]
 
 
     def command_dispatch(self, message):
@@ -367,9 +369,7 @@ class Command(BaseCommand):
             if tennant_id not in self.previous_messages:
                 self.previous_messages[tennant_id] = []
             if not message.from_user.is_bot:
-                self.previous_messages[tennant_id].append({"role": "user", "content": message.from_user.first_name + ": " + message.text})
-                if len(self.previous_messages) > CHATGPT_CONTEXT:
-                    self.previous_messages = self.previous_messages[-CHATGPT_CONTEXT:]
+                self.add_context({"role": "user", "content": message.from_user.first_name + ": " + message.text}, tennant_id)
 
             if random.random() < 0.05:
                 self.chatgpt(
@@ -481,6 +481,11 @@ class Command(BaseCommand):
                     print(error_id)
                     traceback.print_exc()
                     bot.send_message(message.chat.id, f"⚠️ oopsie whoopsie something went fucky wucky. @hexylena fix it. {error_id}")
+
+                    try:
+                        self.add_context({"role": "user", "content": f"An exception occurred: {str(e)}"}, tennant_id)
+                    except:
+                        pass
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
