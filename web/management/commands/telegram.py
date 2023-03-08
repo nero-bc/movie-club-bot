@@ -30,7 +30,11 @@ You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him
 """.strip()
 
 # Wake up message
-bot.send_message(195671723, "Hey hexy I'm re-deployed")
+if 'GIT_REV' in os.environ:
+    COMMIT_URL = f"https://github.com/hexylena/movie-club-bot/commit/{os.environ['GIT_REV']}"
+else:
+    COMMIT_URL = "https://github.com/hexylena/movie-club-bot/"
+bot.send_message(195671723, f"Hey hexy I'm re-deployed, now running {COMMIT_URL}")
 
 # Poll Handling
 def handle_user_response(response):
@@ -125,15 +129,11 @@ class Command(BaseCommand):
         r = requests.get('https://ipinfo.io/json').json()
         org = r['org']
         ip = r['ip']
-        if 'GIT_REV' in os.environ:
-            url = f"https://github.com/hexylena/movie-club-bot/commit/{os.environ['GIT_REV']}"
-        else:
-            url = "https://github.com/hexylena/movie-club-bot/"
 
         data = {
             'Org': org,
             'IP': ip,
-            'URL': url,
+            'URL': COMMIT_URL,
             'Execution Time': datetime.timedelta(seconds=time.process_time()),
             'Uptime': datetime.timedelta(seconds=time.time() - START_TIME),
             'Chat Type': message.chat.type,
