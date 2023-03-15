@@ -69,9 +69,9 @@ class MovieSuggestion(models.Model):
 
             # Exception for unreleased
             if self.runtime == 0:
-                runtime_debuff = 20 / 10
+                runtime_debuff = -20 / 10
             else:
-                runtime_debuff = abs(self.runtime - 90) / 10
+                runtime_debuff = -1 * abs(self.runtime - 90) / 10
             # Exception for unreleased
             if self.ratings > 0:
                 vote_adj = 5 * 5 + year_debuff
