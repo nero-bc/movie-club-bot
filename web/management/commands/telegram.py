@@ -35,6 +35,7 @@ if 'GIT_REV' in os.environ:
 else:
     COMMIT_URL = "https://github.com/hexylena/movie-club-bot/"
 bot.send_message(195671723, f"Hey hexy I'm re-deployed, now running {COMMIT_URL}")
+bot.send_message(-627602564, f"Hey y'all I'm back!")
 
 # Poll Handling
 def handle_user_response(response):
