@@ -397,20 +397,20 @@ class Command(BaseCommand):
             if not message.from_user.is_bot:
                 self.add_context({"role": "user", "content": message.from_user.first_name + ": " + message.text}, tennant_id)
 
-            if ' nick ' or 'nick cage' or ' cage ' in message.text:
-                if random.random() < 0.5:
-                    self.chatgpt(
-                        message.text,
-                        message,
-                        tennant_id
-                    )
-            else:
-                if random.random() < 0.05:
-                    self.chatgpt(
-                        message.text,
-                        message,
-                        tennant_id
-                    )
+            #if ' nick ' or 'nick cage' or ' cage ' in message.text:
+            #    if random.random() < 0.5:
+            #        self.chatgpt(
+            #            message.text,
+            #            message,
+            #            tennant_id
+            #        )
+            #else:
+            if random.random() < 0.05:
+                self.chatgpt(
+                    message.text,
+                    message,
+                    tennant_id
+                )
 
     def prompt_get(self, message):
         tennant_id = str(message.chat.id)
