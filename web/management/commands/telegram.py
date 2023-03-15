@@ -197,14 +197,17 @@ class Command(BaseCommand):
 
 
     def process_imdb_links(self, message):
+        tennant_id = str(message.chat.id)
         new_count = 0
         for m in imdb_link.findall(message.text):
             # bot.send_message(message.chat.id, f"Received {m}")
             try:
-                movie = MovieSuggestion.objects.get(tennant_id=str(message.chat.id), imdb_id=m)
+                movie = MovieSuggestion.objects.get(tennant_id=tennant_id, imdb_id=m)
                 resp = f"Suggested by {movie.suggested_by} on {movie.added.strftime('%B %m, %Y')}\nVotes: "
                 for v in movie.interest_set.all():
                     resp += f"{v.score_e}"
+
+                self.add_context({"role": "user", "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie_details['year']) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}"}, tennant_id)
 
                 bot.send_message(message.chat.id, resp)
             except MovieSuggestion.DoesNotExist:
@@ -215,7 +218,7 @@ class Command(BaseCommand):
                 user = find_user(message.from_user)
 
                 # Process details
-                movie = MovieSuggestion.from_imdb(tennant_id=str(message.chat.id), imdb_id=m)
+                movie = MovieSuggestion.from_imdb(tennant_id=tennant_id, imdb_id=m)
                 movie_details = json.loads(movie.meta)
 
                 msg = f"{m} looks like a new movie, added it to the database. Thanks for the suggestion {user}!\n\n**{movie}**\n\n{movie_details['description']}\n\n{' '.join(movie_details['genre'])}"
@@ -224,6 +227,7 @@ class Command(BaseCommand):
                     rating_count = movie_details.get('aggregateRating', {}).get('ratingCount', 'n/a')
                     rating_value = movie_details.get('aggregateRating', {}).get('ratingValue', 'n/a')
                     msg += f"\n👥{rating_count}⭐️{rating_value}"
+                self.add_context({"role": "user", "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie_details['year']) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}"}, tennant_id)
 
                 bot.send_message(message.chat.id, msg)
 
@@ -320,6 +324,7 @@ class Command(BaseCommand):
                 '# The Cage Factor',
                 '/prompt-get - see current prompt',
                 '/prompt-set - set current prompt',
+                '/dumpcontext - see current context', 
             ]))
         # Ignore me adding /s later
         elif message.text.startswith('/debug'):
@@ -345,11 +350,15 @@ class Command(BaseCommand):
             self.update_imdb_meta(message)
         elif message.text.startswith('/wrapped'):
             self.wrapped(message)
+        elif message.text.startswith('/dumpcontext'):
+            self.dumpcontext(message)
         elif message.text.startswith('/prompt-get'):
             self.prompt_get(message)
         elif message.text.startswith('/prompt-set'):
             self.prompt_set(message)
         elif message.text.startswith('/s'):
+            return
+        elif message.text.startswith('/me'):
             return
         elif self.is_gpt3(message.text):
             if len(message.text.strip().split()) < 3:
@@ -412,6 +421,13 @@ class Command(BaseCommand):
         if len(message.text) > 20:
             self.PROMPTS[tennant_id] = message.text
             bot.reply_to(message, "OK, recorded")
+
+    def dumpcontext(self, message):
+        tennant_id = str(message.chat.id)
+        response = ""
+        for m in self.previous_messages[tennant_id]:
+            response += f"[{m['role']}]: {m['content']}\n\n"
+        bot.reply_to(message, response)
 
     def send_interest_poll(self, message, film):
         question = f'Do you wanna see {film}?'
