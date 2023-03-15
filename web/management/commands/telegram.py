@@ -208,7 +208,7 @@ class Command(BaseCommand):
                 for v in movie.interest_set.all():
                     resp += f"{v.score_e}"
 
-                self.add_context({"role": "user", "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie_details['year']}) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}"}, tennant_id)
+                self.add_context({"role": "user", "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie.year}) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}"}, tennant_id)
 
                 bot.send_message(message.chat.id, resp)
             except MovieSuggestion.DoesNotExist:
@@ -228,7 +228,7 @@ class Command(BaseCommand):
                     rating_count = movie_details.get('aggregateRating', {}).get('ratingCount', 'n/a')
                     rating_value = movie_details.get('aggregateRating', {}).get('ratingValue', 'n/a')
                     msg += f"\n👥{rating_count}⭐️{rating_value}"
-                self.add_context({"role": "user", "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie_details['year']}) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}"}, tennant_id)
+                self.add_context({"role": "user", "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie.year}) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}"}, tennant_id)
 
                 bot.send_message(message.chat.id, msg)
 
