@@ -408,7 +408,7 @@ class Command(BaseCommand):
             #            tennant_id
             #        )
             #else:
-            if random.random() < 0.05 or (message.chat.type == 'private' and not message.from_user.is_bot):
+            if random.random() < 0.025 or (message.chat.type == 'private' and not message.from_user.is_bot):
                 self.chatgpt(
                     message.text,
                     message,
