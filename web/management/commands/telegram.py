@@ -297,6 +297,9 @@ class Command(BaseCommand):
         bot.send_message(message.chat.id, gpt3_text)
 
     def add_context(self, msg, tennant_id):
+        if tennant_id not in self.previous_messages:
+            self.previous_messages[tennant_id] = []
+
         self.previous_messages[tennant_id].append(msg)
         if len(self.previous_messages[tennant_id]) > CHATGPT_CONTEXT:
             self.previous_messages[tennant_id] = self.previous_messages[tennant_id][-CHATGPT_CONTEXT:]
