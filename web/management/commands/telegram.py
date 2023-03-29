@@ -414,7 +414,7 @@ class Command(BaseCommand):
         elif message.text.startswith("/prompt-set"):
             self.prompt_set(message)
         elif message.text.startswith("/dalle"):
-            self.dalle(message.text[len(short) + 1 :], message, tennant_id)
+            self.dalle(message.text[len('/dalle') + 1 :], message, tennant_id)
         elif message.text.startswith("/s"):
             return
         elif message.text.startswith("/me"):
