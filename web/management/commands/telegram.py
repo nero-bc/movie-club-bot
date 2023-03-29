@@ -13,6 +13,7 @@ import json
 import os
 import random
 import re
+import tempfile
 import requests
 import telebot
 import openai
@@ -304,6 +305,17 @@ class Command(BaseCommand):
         if len(self.previous_messages[tennant_id]) > CHATGPT_CONTEXT:
             self.previous_messages[tennant_id] = self.previous_messages[tennant_id][-CHATGPT_CONTEXT:]
 
+    def dalle(self, query, message, tennant_id):
+        response = openai.Image.create(
+          prompt=query,
+          n=1,
+          size="512x512"
+        )
+        image_url = response['data'][0]['url']
+        zz = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+        zz.close()
+        img_data = requests.get(image_url).content
+        bot.send_photo(message.chat.id, img_data)
 
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
@@ -329,6 +341,7 @@ class Command(BaseCommand):
                 '/prompt-get - see current prompt',
                 '/prompt-set - set current prompt',
                 '/dumpcontext - see current context', 
+                '/dalle <prompt>',
             ]))
         # Ignore me adding /s later
         elif message.text.startswith('/debug'):
@@ -360,6 +373,8 @@ class Command(BaseCommand):
             self.prompt_get(message)
         elif message.text.startswith('/prompt-set'):
             self.prompt_set(message)
+        elif message.text.startswith('/dalle'):
+            self.dalle(message.text[len(short) + 1:], message, tennant_id)
         elif message.text.startswith('/s'):
             return
         elif message.text.startswith('/me'):
