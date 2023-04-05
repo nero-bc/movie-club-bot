@@ -41,11 +41,14 @@ You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him
 DALLE_PROMPT = """
 Write some text summarising the current conversation as if it was a meme. It should be less than 100 words and MUST include topics that are currently discussed and MUST  include some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:. Given the current conversational context, please generate such an prompt:
 
-Helena: I'm really happy
-Text: An image of a a pereson looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
+Summary: They are discussing happiness at the weather
+Text:  a person looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
 
-David: why doesn't any of our software ever work
-Text: an image of a miserable programmer sitting at a desk, dark room, in the style of rembrant
+Summary: A programming bug is being discussed, they are not able to find a solution and everything is broken
+Text: a miserable programmer sitting at a desk, dark room, in the style of rembrant
+
+Summary: They really loved the movie they just saw
+Text: people exit a movie theater looking overjoyed, in the style of van gogh
 
 Text:
 """
