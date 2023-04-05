@@ -370,7 +370,8 @@ class Command(BaseCommand):
         prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
         messages = (
             [{"role": "system", "content": prompt}]
-            + self.previous_messages.get(tennant_id, [])
+            # Rewrite cage as a conversational participant so he comments on his own stuff
+            + [{"role": "user", "content": "RoboCage: " + m['content']} for m in self.previous_messages.get(tennant_id, [])]
             + [{"role": "user", "content": DALLE_PROMPT}]
         )
         messages = self.filter_for_size(messages)
