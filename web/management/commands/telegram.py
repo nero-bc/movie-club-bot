@@ -379,6 +379,10 @@ class Command(BaseCommand):
         gpt3_text = msg["content"]
         image_prompt = gpt3_text.replace('Text: ', '')
         self.dalle(image_prompt, message, tennant_id)
+        bot.send_message(
+            message.chat.id,
+            f"[Dall-e prompt] {image_prompt}",
+        )
 
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
