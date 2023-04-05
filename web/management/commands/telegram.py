@@ -227,7 +227,7 @@ class Command(BaseCommand):
                 self.add_context(
                     {
                         "role": "user",
-                        "content": f"IMDB: {movie}. Thanks for the suggestion {user} to watch **{movie}** ({movie.year}) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}",
+                        "content": f"IMDB: {movie}. {movie.suggested_by} suggested to watch **{movie}** ({movie.year}) which is about {movie_details['description']} and uses the following genres{' '.join(movie_details['genre'])}",
                     },
                     tennant_id,
                 )
