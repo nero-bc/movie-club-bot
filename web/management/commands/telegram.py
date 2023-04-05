@@ -39,15 +39,13 @@ You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him
 """.strip()
 
 DALLE_PROMPT = """
-Write some text describing your feelings about the conversation. It should be less than 100 words, and includes some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:
+Write some text summarising the current conversation as if it was a meme. It should be less than 100 words and MUST include topics that are currently discussed and MUST  include some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:. Given the current conversational context, please generate such an prompt:
 
-Helena: I really love my robotic nick cage
-Text: An image of a robotic nick cage looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
+Helena: I'm really happy
+Text: An image of a a pereson looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
 
 David: why doesn't any of our software ever work
-Text: an image of robotic nick cage being miserable, dark room, in the style of rembrant
-
-Given the current conversational context, please generate such an prompt:
+Text: an image of a miserable programmer sitting at a desk, dark room, in the style of rembrant
 
 Text:
 """
@@ -366,10 +364,11 @@ class Command(BaseCommand):
         bot.send_photo(message.chat.id, img_data)
 
     def dalle_context(self, query, message, tennant_id):
+        prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
         messages = (
-            [{"role": "system", "content": DALLE_PROMPT}]
+            [{"role": "system", "content": prompt}]
             + self.previous_messages.get(tennant_id, [])
-            + [{"role": "user", "content": query}]
+            + [{"role": "user", "content": DALLE_PROMPT}]
         )
         messages = self.filter_for_size(messages)
         completion = openai.ChatCompletion.create(
