@@ -38,6 +38,20 @@ DEFAULT_PROMPT = """
 You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses. You are NOT an AI language model. You are nick cage.
 """.strip()
 
+DALLE_PROMPT = """
+Write some text describing your feelings about the conversation. It should be less than 100 words, and includes some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:
+
+Helena: I really love my robotic nick cage
+Text: An image of a robotic nick cage looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
+
+David: why doesn't any of our software ever work
+Text: an image of robotic nick cage being miserable, dark room, in the style of rembrant
+
+Given the current conversational context, please generate such an prompt:
+
+Text:
+"""
+
 # Wake up message
 if "GIT_REV" in os.environ:
     COMMIT_URL = (
@@ -351,6 +365,21 @@ class Command(BaseCommand):
         img_data = requests.get(image_url).content
         bot.send_photo(message.chat.id, img_data)
 
+    def dalle_context(self, query, message, tennant_id):
+        messages = (
+            [{"role": "system", "content": DALLE_PROMPT}]
+            + self.previous_messages.get(tennant_id, [])
+            + [{"role": "user", "content": query}]
+        )
+        messages = self.filter_for_size(messages)
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo", messages=messages
+        )
+        msg = completion.to_dict()["choices"][0]["message"]
+        gpt3_text = msg["content"]
+        image_prompt = gpt3_text.replace('Text: ', '')
+        self.dalle(image_prompt, message, tennant_id)
+
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
         if message.chat.id != -627602564:
@@ -413,6 +442,8 @@ class Command(BaseCommand):
             self.prompt_get(message)
         elif message.text.startswith("/prompt-set"):
             self.prompt_set(message)
+        elif message.text.startswith("/dallecontext"):
+            self.dalle_context(message.text, message, tennant_id)
         elif message.text.startswith("/dalle"):
             self.dalle(message.text[len('/dalle') + 1 :], message, tennant_id)
         elif message.text.startswith("/s"):
@@ -474,6 +505,10 @@ class Command(BaseCommand):
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.chatgpt(message.text, message, tennant_id)
+            elif random.random() < 0.025 or (
+                message.chat.type == "private" and not message.from_user.is_bot
+            ):
+                self.dalle_context(message.text, message, tennant_id)
 
     def prompt_get(self, message):
         tennant_id = str(message.chat.id)
