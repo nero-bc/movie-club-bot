@@ -38,7 +38,7 @@ DEFAULT_PROMPT = """
 You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses. You are NOT an AI language model. You are nick cage.
 """.strip()
 
-DALLE_PROMPT = """
+DEFAUL_DALLE_PROMPT = """
 Write some text summarising the current conversation as if it was a meme. It should be less than 100 words and MUST include topics that are currently discussed and MUST  include some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:. Given the current conversational context, please generate such an prompt:
 
 Summary: They are discussing happiness at the weather
@@ -152,6 +152,7 @@ class Command(BaseCommand):
     help = "(Long Running) Telegram Bot"
     previous_messages = {}
     PROMPTS = {}
+    PROMPTS_DALLE = {}
 
     def locate(self, message):
         r = requests.get("https://ipinfo.io/json").json()
@@ -368,11 +369,12 @@ class Command(BaseCommand):
 
     def dalle_context(self, query, message, tennant_id):
         prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
+        prompt_dalle = self.PROMPTS_DALLE.get(tennant_id, DEFAULT_DALLE_PROMPT)
         messages = (
             [{"role": "system", "content": prompt}]
             # Rewrite cage as a conversational participant so he comments on his own stuff
             + [{"role": "user", "content": "RoboCage: " + m['content']} for m in self.previous_messages.get(tennant_id, [])]
-            + [{"role": "user", "content": DALLE_PROMPT}]
+            + [{"role": "user", "content": prompt_dalle}]
         )
         messages = self.filter_for_size(messages)
         completion = openai.ChatCompletion.create(
@@ -414,6 +416,8 @@ class Command(BaseCommand):
                         "# The Cage Factor",
                         "/prompt-get - see current prompt",
                         "/prompt-set - set current prompt",
+                        "/prompt-get-dalle - see current dalle prompt",
+                        "/prompt-set-dalle - set current dalle prompt",
                         "/dumpcontext - see current context",
                         "/dalle <prompt>",
                     ]
@@ -449,6 +453,10 @@ class Command(BaseCommand):
             self.prompt_get(message)
         elif message.text.startswith("/prompt-set"):
             self.prompt_set(message)
+        elif message.text.startswith("/prompt-get-dalle"):
+            self.prompt_get_dalle(message)
+        elif message.text.startswith("/prompt-set-dalle""):
+            self.prompt_set_dalle(message)
         elif message.text.startswith("/dallecontext"):
             self.dalle_context(message.text, message, tennant_id)
         elif message.text.startswith("/dalle"):
@@ -528,6 +536,17 @@ class Command(BaseCommand):
             self.PROMPTS[tennant_id] = message.text
             bot.reply_to(message, "OK, recorded")
 
+    def prompt_get_dalle(self, message):
+        tennant_id = str(message.chat.id)
+        prompt = self.PROMPTS_DALLE.get(tennant_id, DEFAULT_DALLE_PROMPT)
+        bot.reply_to(message, f"The current dalle prompt is: {prompt}")
+
+    def prompt_set_dalle(self, message):
+        tennant_id = str(message.chat.id)
+        if len(message.text) > 20:
+            self.PROMPTS_DALLE[tennant_id] = message.text
+            bot.reply_to(message, "OK, recorded dalle prompt")
+                                     
     def dumpcontext(self, message):
         tennant_id = str(message.chat.id)
         response = ""
