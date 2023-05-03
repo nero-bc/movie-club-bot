@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from sentry_sdk import capture_exception
 import time
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -667,25 +668,11 @@ class Command(BaseCommand):
                 try:
                     self.command_dispatch(message)
                 except Exception as e:
-                    error_id = str(uuid.uuid4())
-                    print(e)
-                    print(error_id)
-                    traceback.print_exc()
+                    capture_exception(e)
                     bot.send_message(
                         message.chat.id,
-                        f"⚠️ oopsie whoopsie something went fucky wucky. @hexylena fix it. {error_id}",
+                        f"⚠️ reported to sentry",
                     )
-
-                    try:
-                        self.add_context(
-                            {
-                                "role": "user",
-                                "content": f"An exception occurred: {str(e)}",
-                            },
-                            tennant_id,
-                        )
-                    except:
-                        pass
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
