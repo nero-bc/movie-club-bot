@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 from django.utils.timezone import now
 import random
 import time
@@ -27,7 +28,8 @@ class Buff(models.Model):
 
 # Create your models here.
 class MovieSuggestion(models.Model):
-    imdb_id = models.CharField(max_length=64, primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    imdb_id = models.CharField(max_length=64)
     tennant_id = models.CharField(max_length=64)
 
     # Meta
