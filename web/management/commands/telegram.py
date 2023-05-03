@@ -393,8 +393,7 @@ class Command(BaseCommand):
 
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
-        if message.chat.id != -627602564:
-            print(message)
+        message_s = str(message)
 
         if message.text.startswith("/start") or message.text.startswith("/help"):
             # Do something with the message
