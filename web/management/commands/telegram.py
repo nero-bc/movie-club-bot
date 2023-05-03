@@ -455,7 +455,7 @@ class Command(BaseCommand):
             self.prompt_set(message)
         elif message.text.startswith("/prompt-get-dalle"):
             self.prompt_get_dalle(message)
-        elif message.text.startswith("/prompt-set-dalle""):
+        elif message.text.startswith("/prompt-set-dalle"):
             self.prompt_set_dalle(message)
         elif message.text.startswith("/dallecontext"):
             self.dalle_context(message.text, message, tennant_id)
