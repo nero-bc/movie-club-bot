@@ -60,8 +60,9 @@ if "GIT_REV" in os.environ:
     )
 else:
     COMMIT_URL = "https://github.com/hexylena/movie-club-bot/"
+
 bot.send_message(195671723, f"Hey hexy I'm re-deployed, now running {COMMIT_URL}")
-bot.send_message(-627602564, f"Hey y'all I'm back!")
+#bot.send_message(-627602564, f"Hey y'all I'm back!")
 
 
 # Poll Handling
@@ -546,11 +547,11 @@ class Command(BaseCommand):
         if len(message.text) > 20:
             self.PROMPTS_DALLE[tennant_id] = message.text
             bot.reply_to(message, "OK, recorded dalle prompt")
-                                     
+
     def dumpcontext(self, message):
         tennant_id = str(message.chat.id)
         response = ""
-        for m in self.previous_messages[tennant_id]:
+        for m in self.previous_messages.get(tennant_id, []):
             response += f"[{m['role']}]: {m['content']}\n\n"
         bot.reply_to(message, response)
 
