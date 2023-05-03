@@ -626,37 +626,33 @@ class Command(BaseCommand):
         )
 
     def send_rate_poll(self, message: telebot.types.Message):
-        parts = message.text.split()
-        if len(parts) != 2:
-            bot.send_message(message.chat.id, "Error, use /rate tt<id>")
-            return
+        for m in imdb_link.findall(message.text):
+            try:
+                film = MovieSuggestion.objects.get(
+                    tennant_id=str(message.chat.id), imdb_id=m
+                )
+            except:
+                bot.send_message(message.chat.id, "Unknown film")
+                return
 
-        try:
-            film = MovieSuggestion.objects.get(
-                tennant_id=str(message.chat.id), imdb_id=parts[1]
+            film.status = 1
+            film.status_changed_date = timezone.now()
+            film.save()
+
+            question = f"What did you think of {film}? Give it a rating."
+            options = ["0", "⭐️", "⭐️⭐️", "⭐️⭐️⭐️", "⭐️⭐️⭐️⭐️", "⭐️⭐️⭐️⭐️⭐️"]
+
+            r = bot.send_poll(
+                message.chat.id, question=question, options=options, is_anonymous=False
             )
-        except:
-            bot.send_message(message.chat.id, "Unknown film")
-            return
-
-        film.status = 1
-        film.status_changed_date = timezone.now()
-        film.save()
-
-        question = f"What did you think of {film}? Give it a rating."
-        options = ["0", "⭐️", "⭐️⭐️", "⭐️⭐️⭐️", "⭐️⭐️⭐️⭐️", "⭐️⭐️⭐️⭐️⭐️"]
-
-        r = bot.send_poll(
-            message.chat.id, question=question, options=options, is_anonymous=False
-        )
-        Poll.objects.create(
-            tennant_id=str(message.chat.id),
-            poll_id=r.poll.id,
-            film=film,
-            question=question,
-            options="__".join(options),
-            poll_type="rate",
-        )
+            Poll.objects.create(
+                tennant_id=str(message.chat.id),
+                poll_id=r.poll.id,
+                film=film,
+                question=question,
+                options="__".join(options),
+                poll_type="rate",
+            )
 
     def handle(self, *args, **options):
         def handle_messages(messages):
