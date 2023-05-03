@@ -449,14 +449,14 @@ class Command(BaseCommand):
             self.wrapped(message)
         elif message.text.startswith("/dumpcontext"):
             self.dumpcontext(message)
-        elif message.text.startswith("/prompt-get"):
-            self.prompt_get(message)
-        elif message.text.startswith("/prompt-set"):
-            self.prompt_set(message)
         elif message.text.startswith("/prompt-get-dalle"):
             self.prompt_get_dalle(message)
         elif message.text.startswith("/prompt-set-dalle"):
             self.prompt_set_dalle(message)
+        elif message.text.startswith("/prompt-get"):
+            self.prompt_get(message)
+        elif message.text.startswith("/prompt-set"):
+            self.prompt_set(message)
         elif message.text.startswith("/dallecontext"):
             self.dalle_context(message.text, message, tennant_id)
         elif message.text.startswith("/dalle"):
