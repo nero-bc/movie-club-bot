@@ -57,6 +57,10 @@ class MovieSuggestion(models.Model):
     )
 
     @property
+    def get_ourvotes(self):
+        return sum([i.score for i in self.interest_set.all()])
+
+    @property
     def get_score(self):
         try:
             buff_score = sum(

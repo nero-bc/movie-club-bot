@@ -10,11 +10,13 @@ Movie List
 	<thead>
 		<tr>
 			<th>Title</th>
+			<th>Year</th>
 			<th>Suggested By</th>
 			<th>Days Since Added</th>
 			<th>IMDB rating</th>
 			<th>Score</th>
 			<th>Buffs</th>
+			<th>Ratings</th>
 			<th>💯</th>
 			<th>🆗</th>
 			<th>🤷</th>
@@ -30,6 +32,7 @@ Movie List
 				{{ m.title }}
 				</a>
 			</td>
+			<td>{{ m.year }}</td>
 			<td>
 				{% if m.suggested_by %}
 				<a href="{% url 'profile' m.suggested_by.username %}">{{ m.suggested_by.first_name }}</a>
@@ -40,6 +43,7 @@ Movie List
 			<td>{{ m.get_score|floatformat:2 }}</td>
 			<td>{{ m.get_buffs }}</td>
 
+			<td>{{ m.get_ourvotes }}</td>
 			<td>{{ m.get_rated_2 | join:',' }}</td>
 			<td>{{ m.get_rated_1 | join:',' }}</td>
 			<td>{{ m.get_rated_0 | join:',' }}</td>
