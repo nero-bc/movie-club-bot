@@ -463,6 +463,8 @@ class Command(BaseCommand):
             self.dalle_context(message.text, message, tennant_id)
         elif message.text.startswith("/dalle"):
             self.dalle(message.text[len('/dalle') + 1 :], message, tennant_id)
+        elif message.text.startswith("/error"):
+            return 1 / 0
         elif message.text.startswith("/s"):
             return
         elif message.text.startswith("/me"):
