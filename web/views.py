@@ -15,8 +15,8 @@ START_TIME = time.time()
 
 def tennant_list(request):
     template = loader.get_template("home.html")
-    tennant_ids = MovieSuggestion.objects.values_list("tennant_id", flat=True)
-    tennant_ids = list(set(tennant_ids))
+    tennant_ids = MovieSuggestion.objects.values("tennant_id").distinct()
+    tennant_ids = [x['tennant_id'] for x in tennant_ids]
 
     context = {"tennant_ids": tennant_ids}
     return HttpResponse(template.render(context, request))
@@ -24,14 +24,27 @@ def tennant_list(request):
 
 def index(request, acct):
     template = loader.get_template("list.html")
+    suggestions = MovieSuggestion.objects.filter(tennant_id=str(acct), status=0) \
+        .select_related('suggested_by') \
+        .prefetch_related('buffs') \
+        .prefetch_related('interest_set').prefetch_related('interest_set__user') \
+
+    watched = MovieSuggestion.objects.filter(
+            tennant_id=str(acct), status=1
+        ) \
+        .select_related('suggested_by') \
+        .prefetch_related('buffs') \
+        .prefetch_related('interest_set').prefetch_related('interest_set__user') \
+        .prefetch_related('criticrating_set') \
+        .prefetch_related('criticrating_set__user') \
+        .order_by("-status_changed_date")
+
     context = {
         "unwatched": sorted(
-            MovieSuggestion.objects.filter(tennant_id=str(acct), status=0),
+            suggestions,
             key=lambda x: -x.get_score,
         ),
-        "watched": MovieSuggestion.objects.filter(
-            tennant_id=str(acct), status=1
-        ).order_by("-status_changed_date"),
+        "watched": watched,
     }
     return HttpResponse(template.render(context, request))
 

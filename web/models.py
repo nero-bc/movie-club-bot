@@ -273,7 +273,7 @@ class CriticRating(models.Model):
         unique_together = (("user", "film"),)
 
     def __str__(self):
-        return f"{self.user.first_name}|{self.film}"
+        return f"{self.user.first_name}|{self.film}|" + "★" * self.score
 
 
 class Poll(models.Model):
