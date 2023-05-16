@@ -238,6 +238,8 @@ class Command(BaseCommand):
             # bot.send_message(message.chat.id, f"Received {m}")
             try:
                 movie = MovieSuggestion.objects.get(tennant_id=tennant_id, imdb_id=m)
+                movie_details = json.loads(movie.meta)
+           
                 resp = f"Suggested by {movie.suggested_by} on {movie.added.strftime('%B %m, %Y')}\nVotes: "
                 for v in movie.interest_set.all():
                     resp += f"{v.score_e}"
