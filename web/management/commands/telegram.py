@@ -155,6 +155,9 @@ class Command(BaseCommand):
     previous_messages = {}
     PROMPTS = {}
     PROMPTS_DALLE = {}
+    CHATTINESS_DEFAULT = (0.025, 0.025)
+    CHATTINESS_ANNOYING = (0.7, 0.1)
+    CHATTINESS = {}
 
     def locate(self, message):
         r = requests.get("https://ipinfo.io/json").json()
@@ -460,6 +463,10 @@ class Command(BaseCommand):
             self.prompt_get(message)
         elif message.text.startswith("/prompt-set"):
             self.prompt_set(message)
+        elif message.text.startswith("/chatty"):
+            self.CHATTINESS[tennant_id] = self.CHATTINESS_ANNOYING
+        elif message.text.startswith("/shush") or message.text.startswith("/shhhh"):
+            self.CHATTINESS[tennant_id] = self.CHATTINESS_DEFAULT
         elif message.text.startswith("/dallecontext"):
             self.dalle_context(message.text, message, tennant_id)
         elif message.text.startswith("/dalle"):
@@ -521,11 +528,12 @@ class Command(BaseCommand):
             #            tennant_id
             #        )
             # else:
-            if random.random() < 0.025 or (
+            (cx, cy) = self.CHATTINESS.get(tennant_id, CHATTINESS_DEFAULT)
+            if random.random() < cx or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.chatgpt(message.text, message, tennant_id)
-            elif random.random() < 0.025 or (
+            elif random.random() < cy or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.dalle_context(message.text, message, tennant_id)
