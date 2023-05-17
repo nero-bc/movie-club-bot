@@ -534,7 +534,7 @@ class Command(BaseCommand):
             #            tennant_id
             #        )
             # else:
-            (cx, cy) = self.CHATTINESS.get(tennant_id, CHATTINESS_DEFAULT)
+            (cx, cy) = self.CHATTINESS.get(tennant_id, self.CHATTINESS_DEFAULT)
             if random.random() < cx or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
