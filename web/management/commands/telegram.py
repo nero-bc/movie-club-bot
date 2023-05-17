@@ -408,7 +408,7 @@ class Command(BaseCommand):
                 + "\n".join(
                     [
                         "/debug - Show some debug info",
-                        "/status - Show some status info",
+                        "/status - alias for /debug",
                         "/passwd - Change your password (DM only.)",
                         "/countdown [number] - Start a countdown",
                         "/rate tt<id> - Ask group to rate the film",
@@ -426,6 +426,9 @@ class Command(BaseCommand):
                         "/prompt-set-dalle - set current dalle prompt",
                         "/dumpcontext - see current context",
                         "/dalle <prompt>",
+                        "/chatty - Make cagebot more chatty",
+                        "/shush - Tell him to shush",
+                        "/error - Trigger an error intentionally",
                     ]
                 ),
             )
@@ -446,10 +449,13 @@ class Command(BaseCommand):
         elif message.text.startswith("/remove-confirm"):
             self.finalize_removal_poll(message)
         elif message.text.startswith("/rate"):
+            self.log(tennant_id, "rate")
             self.send_rate_poll(message)
         elif message.text.startswith("/suggest"):
+            self.log(tennant_id, "suggest")
             self.suggest(message)
         elif message.text.startswith("/update"):
+            self.log(tennant_id, "update")
             self.update_imdb_meta(message)
         elif message.text.startswith("/wrapped"):
             self.wrapped(message)
