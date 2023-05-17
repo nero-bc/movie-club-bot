@@ -521,11 +521,11 @@ class Command(BaseCommand):
             #            tennant_id
             #        )
             # else:
-            if random.random() < 0.025 or (
+            if random.random() < 0.7 or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.chatgpt(message.text, message, tennant_id)
-            elif random.random() < 0.025 or (
+            elif random.random() < 0.1 or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.dalle_context(message.text, message, tennant_id)
