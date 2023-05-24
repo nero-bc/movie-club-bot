@@ -110,6 +110,16 @@ class MovieSuggestion(models.Model):
         return sum(nums) / len(nums)
 
     @property
+    def get_rating_nonavg(self):
+        nums = CriticRating.objects.filter(film=self)
+        nums = [x.score for x in nums]
+
+        if len(nums) == 0:
+            return 0
+
+        return sum(nums)
+
+    @property
     def get_buffs(self):
         b = self.buffs.all()
         return "".join(map(str, b))
