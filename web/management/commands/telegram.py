@@ -216,7 +216,7 @@ class Command(BaseCommand):
             })
         return functions
 
-    def server_status(self, full:str="yes") -> str:
+    def server_status(self, full:str="yes", tennant_id: str="") -> str:
         """
         Obtain status information about the current server process
 
@@ -274,6 +274,34 @@ class Command(BaseCommand):
             message,
             f"Username: {user.username}\npassword: {newpassword}\n\n Go change it at https://movie-club-bot.app.galaxians.org/admin/password_change/",
         )
+
+    def movie_suggestions(self, count: int=5, genre:str = None, tennant_id: str = "") -> str:
+        """
+        List some movies we should watch, based on our watch list.
+
+        :param count: How many films to return? Defaults to 5.
+        :param genre: The genre to filter on, e.g. action or documentary.
+        :param tennant_id: The tennant.
+        """
+        args = {
+            'tennant_id': tennant_id,
+            'status': 0,
+        }
+        if genre:
+            args['genre__icontains'] = genre
+
+        unwatched = sorted(
+            MovieSuggestion.objects.filter(**args),
+            key=lambda x: -x.get_score,
+        )[0:count]
+        msg = "Top suggestions:"
+        for film in unwatched:
+            msg += f"{film.title} ({film.year}) {film.meta['description']}\n"
+            msg += f"  ⭐️{film.rating}\n"
+            msg += f"  ⏰{film.runtime}\n"
+            msg += f"  🎬{film.imdb_link}\n"
+            msg += f"  📕{film.genre}\n\n"
+        return msg
 
     def suggest(self, message):
         unwatched = sorted(
@@ -432,6 +460,8 @@ class Command(BaseCommand):
         else:
             # Step 3, call the function
             fn = getattr(self, function)
+            # Override the tennant id
+            function_args['tennant_id'] = message.chat.id
             result = fn(**function_args)
             print(f"RESULT: {result}")
 
