@@ -409,6 +409,7 @@ class Command(BaseCommand):
                 function_args = json.loads(msg['function_call']['arguments'])
             except:
                 function = None
+        print(f"CALLING FUNCTION {function} with {function_args}")
 
         if function is None:
             gpt3_text = msg["content"]
