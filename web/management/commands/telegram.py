@@ -170,6 +170,9 @@ class Command(BaseCommand):
         functions = []
         discovered = [x for x in inspect.getmembers(self) if not x[0].startswith('_') and x[0] != 'discover']
         for (fn_name, fn) in discovered:
+            if not callable(fn):
+                continue
+
             if fn.__doc__ is None:
                 continue
 
@@ -209,11 +212,11 @@ class Command(BaseCommand):
             })
         return functions
 
-    def locate(self) -> str:
+    def locate(self, full:str="yes") -> str:
         """
         Obtain status information about the current server process
 
-        :param message: A telegram message object
+        :param full: Show the full results
         """
         r = requests.get("https://ipinfo.io/json").json()
         org = r["org"]
