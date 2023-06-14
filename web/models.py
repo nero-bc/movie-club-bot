@@ -63,6 +63,10 @@ class MovieSuggestion(models.Model):
         return sum([i.score for i in self.interest_set.all()])
 
     @property
+    def get_ourvotes_emoji(self):
+        return [i.score_e for i in self.interest_set.all()]
+
+    @property
     def get_score(self):
         try:
             buff_score = sum(
@@ -113,11 +117,7 @@ class MovieSuggestion(models.Model):
     def get_rating_nonavg(self):
         nums = CriticRating.objects.filter(film=self)
         nums = [x.score for x in nums]
-
-        if len(nums) == 0:
-            return 0
-
-        return sum(nums)
+        return nums
 
     @property
     def get_buffs(self):
