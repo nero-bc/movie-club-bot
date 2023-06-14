@@ -435,7 +435,7 @@ class Command(BaseCommand):
                 messages=[
                     {"role": "system", "content": prompt}
                     *self.previous_messages.get(tennant_id, []),
-                    {"role": "user", "content": query}
+                    {"role": "user", "content": query},
                     msg,
                     {
                         "role": "function",
