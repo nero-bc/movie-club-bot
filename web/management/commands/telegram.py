@@ -435,21 +435,23 @@ class Command(BaseCommand):
             # Step 3, call the function
             fn = getattr(self, function)
             result = fn(**function_args)
+            print(f"RESULT: {result}")
 
             # Step 4, send model the info on the function call and function response
+            final_messages = [
+                {"role": "system", "content": prompt}
+            ] + self.previous_messages.get(tennant_id, []) + [
+                {"role": "user", "content": query},
+                msg,
+                {
+                    "role": "function",
+                    "name": function,
+                    "content": result,
+                }
+            ]
             second_response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo-0613",
-                messages=[
-                    {"role": "system", "content": prompt}
-                    *self.previous_messages.get(tennant_id, []),
-                    {"role": "user", "content": query},
-                    msg,
-                    {
-                        "role": "function",
-                        "name": function,
-                        "content": result,
-                    },
-                ],
+                messages=final_messages,
             )
             return second_response['choices'][0]['message']
 
