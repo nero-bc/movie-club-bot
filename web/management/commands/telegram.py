@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+import psutil
 from sentry_sdk import capture_exception
 import time
 from django.contrib.auth.models import User
@@ -20,6 +21,7 @@ from web.models import (
 import datetime
 import json
 import os
+import inspect
 import random
 import re
 import tempfile
@@ -207,7 +209,7 @@ class Command(BaseCommand):
             })
         return functions
 
-    def locate(self, message: object = None) -> str:
+    def locate(self) -> str:
         """
         Obtain status information about the current server process
 
@@ -223,20 +225,11 @@ class Command(BaseCommand):
             "URL": COMMIT_URL,
             "Execution Time": datetime.timedelta(seconds=time.process_time()),
             "Uptime": datetime.timedelta(seconds=time.time() - START_TIME),
+            "CPU Percentage (of 100)": psutil.cpu_percent(),
+            "RAM Percentage (of 100)": psutil.virtual_memory().percent,
         }
-        if message is not None:
-            data.update({
-                "Chat Type": message.chat.type,
-                "Chat ID": message.chat.id,
-                "Chat sender": message.from_user.id,
-            })
 
-        fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
-
-        if message is not None:
-            bot.reply_to(message, fmt_msg)
-        else:
-            return fmt_msg
+        return "\n".join([f"{k}: {v}" for (k, v) in data.items()])
 
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
@@ -402,19 +395,55 @@ class Command(BaseCommand):
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0613", messages=messages, functions=self.discover()
         )
-        msg = completion.to_dict()["choices"][0]["message"]
-        gpt3_text = msg["content"]
+        import pprint
+        pprint.pprint(completion)
 
-        # Setup if empty
-        if tennant_id not in self.previous_messages:
-            self.previous_messages[tennant_id] = []
+        msg = completion["choices"][0]["message"]
+        # Check if it's a function call
+        function = None
+        function_args = {}
+        if 'function_call' in msg:
+            function = msg['function_call']['name']
+            # Note: the JSON response from the model may not be valid JSON
+            try:
+                function_args = json.loads(msg['function_call']['arguments'])
+            except:
+                function = None
 
-        # Add the user's query
-        self.add_context({"role": "user", "content": query}, tennant_id)
-        # And the system's response
-        self.add_context(msg, tennant_id)
+        if function is None:
+            gpt3_text = msg["content"]
 
-        bot.send_message(message.chat.id, gpt3_text)
+            # Setup if empty
+            if tennant_id not in self.previous_messages:
+                self.previous_messages[tennant_id] = []
+
+            # Add the user's query
+            self.add_context({"role": "user", "content": query}, tennant_id)
+            # And the system's response
+            self.add_context(msg, tennant_id)
+
+            bot.send_message(message.chat.id, gpt3_text)
+        else:
+            # Step 3, call the function
+            fn = getattr(self, function)
+            result = fn(**function_args)
+
+            # Step 4, send model the info on the function call and function response
+            second_response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo-0613",
+                messages=[
+                    {"role": "system", "content": prompt}
+                    *self.previous_messages.get(tennant_id, []),
+                    {"role": "user", "content": query}
+                    msg,
+                    {
+                        "role": "function",
+                        "name": function,
+                        "content": result,
+                    },
+                ],
+            )
+            return second_response['choices'][0]['message']
 
     def add_context(self, msg, tennant_id):
         if tennant_id not in self.previous_messages:
@@ -493,12 +522,16 @@ class Command(BaseCommand):
                 ),
             )
         # Ignore me adding /s later
-        elif message.text.startswith("/debug"):
-            self.log(tennant_id, "debug")
-            self.locate(message)
-        elif message.text.startswith("/status"):
+        elif message.text.startswith("/debug") or  message.text.startswith("/status"):
             self.log(tennant_id, "status")
-            self.locate(message)
+            loc = self.locate()
+            chat_details = {
+                "Chat Type": message.chat.type,
+                "Chat ID": message.chat.id,
+                "Chat sender": message.from_user.id,
+            }
+            loc += "\n" + "\n".join([f"{k}: {v}" for (k, v) in chat_details.items()])
+            bot.reply_to(message, loc)
         elif message.text.startswith("/passwd"):
             self.change_password(message)
         elif message.text.startswith("/countdown"):
@@ -628,9 +661,7 @@ class Command(BaseCommand):
 
     def dumpcontext(self, message):
         tennant_id = str(message.chat.id)
-        response = ""
-        for m in self.previous_messages.get(tennant_id, []):
-            response += f"[{m['role']}]: {m['content']}\n\n"
+        response = json.dumps(self.previous_messages.get(tennant_id, []), indent=2)
         bot.reply_to(message, response)
 
     def send_interest_poll(self, message, film):
