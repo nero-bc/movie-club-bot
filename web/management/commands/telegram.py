@@ -159,7 +159,60 @@ class Command(BaseCommand):
     CHATTINESS_ANNOYING = (0.7, 0.1)
     CHATTINESS = {}
 
-    def locate(self, message):
+    def discover(self):
+        TYPES = {
+            str: "string",
+            int: "integer",
+        }
+
+        functions = []
+        discovered = [x for x in inspect.getmembers(self) if not x[0].startswith('_') and x[0] != 'discover']
+        for (fn_name, fn) in discovered:
+            if fn.__doc__ is None:
+                continue
+
+            parsed_docstring = {
+                x.strip().split(':')[1].split(' ')[1]: x.split(':')[2]
+                for x in
+                fn.__doc__.split('\n')
+                if x.strip().startswith(':param')
+            }
+
+            sig = inspect.signature(fn)
+            required = []
+            props = {}
+            for p, pt in sig.parameters.items():
+                required = False
+                if pt.default is inspect._empty:
+                    required  = True
+                    required.append(p)
+
+                if pt.annotation not in TYPES and not required:
+                    # Skip unknown optional parameters
+                    pass
+                else:
+                    props[p] = {
+                        "type": TYPES[pt.annotation],  # Let it fail.
+                        "descrption": parsed_docstring[p]
+                    }
+
+            functions.append({
+                "name": fn_name,
+                "description": fn.__doc__.strip().split('\n\n')[0],
+                "parameters": {
+                    "type": "object",
+                    "properties": props
+                },
+                "required": required
+            })
+        return functions
+
+    def locate(self, message: object = None) -> str:
+        """
+        Obtain status information about the current server process
+
+        :param message: A telegram message object
+        """
         r = requests.get("https://ipinfo.io/json").json()
         org = r["org"]
         ip = r["ip"]
@@ -170,13 +223,20 @@ class Command(BaseCommand):
             "URL": COMMIT_URL,
             "Execution Time": datetime.timedelta(seconds=time.process_time()),
             "Uptime": datetime.timedelta(seconds=time.time() - START_TIME),
-            "Chat Type": message.chat.type,
-            "Chat ID": message.chat.id,
-            "Chat sender": message.from_user.id,
         }
+        if message is not None:
+            data.update({
+                "Chat Type": message.chat.type,
+                "Chat ID": message.chat.id,
+                "Chat sender": message.from_user.id,
+            })
 
         fmt_msg = "\n".join([f"{k}: {v}" for (k, v) in data.items()])
-        bot.reply_to(message, fmt_msg)
+
+        if message is not None:
+            bot.reply_to(message, fmt_msg)
+        else:
+            return fmt_msg
 
     def countdown(self, chat_id, message_parts):
         if len(message_parts) == 2:
@@ -340,7 +400,7 @@ class Command(BaseCommand):
         messages = self.filter_for_size(messages)
 
         completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-0613", messages=messages
+            model="gpt-3.5-turbo-0613", messages=messages, functions=self.discover()
         )
         msg = completion.to_dict()["choices"][0]["message"]
         gpt3_text = msg["content"]
