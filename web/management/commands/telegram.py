@@ -221,6 +221,7 @@ class Command(BaseCommand):
         Obtain status information about the current server process
 
         :param full: Show the extended results
+        :param tennant_id: The tennant, this will be set automatically
         """
         r = requests.get("https://ipinfo.io/json").json()
         org = r["org"]
@@ -281,7 +282,7 @@ class Command(BaseCommand):
 
         :param count: How many films to return? Defaults to 5.
         :param genre: The genre to filter on, e.g. action or documentary.
-        :param tennant_id: The tennant.
+        :param tennant_id: The tennant, this will be set automatically
         """
         args = {
             'tennant_id': tennant_id,
