@@ -183,16 +183,20 @@ class Command(BaseCommand):
                 if x.strip().startswith(':param')
             }
 
+            if not parsed_docstring:
+                continue
+
             sig = inspect.signature(fn)
             required = []
             props = {}
             for p, pt in sig.parameters.items():
-                required = False
+                is_required = False
                 if pt.default is inspect._empty:
-                    required  = True
+                    is_required = True
                     required.append(p)
 
-                if pt.annotation not in TYPES and not required:
+                print(fn_name, p, pt.annotation in TYPES, is_required)
+                if pt.annotation not in TYPES and not is_required:
                     # Skip unknown optional parameters
                     pass
                 else:
@@ -212,11 +216,11 @@ class Command(BaseCommand):
             })
         return functions
 
-    def locate(self, full:str="yes") -> str:
+    def server_status(self, full:str="yes") -> str:
         """
         Obtain status information about the current server process
 
-        :param full: Show the full results
+        :param full: Show the extended results
         """
         r = requests.get("https://ipinfo.io/json").json()
         org = r["org"]
