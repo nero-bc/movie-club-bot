@@ -297,7 +297,8 @@ class Command(BaseCommand):
         )[0:count]
         msg = "Top suggestions:"
         for film in unwatched:
-            msg += f"{film.title} ({film.year}) {film.meta['description']}\n"
+            meta = json.loads(film.meta)
+            msg += f"{film.title} ({film.year}) {meta['description']}\n"
             msg += f"  ⭐️{film.rating}\n"
             msg += f"  ⏰{film.runtime}\n"
             msg += f"  🎬{film.imdb_link}\n"
