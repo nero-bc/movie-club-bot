@@ -427,9 +427,7 @@ class Command(BaseCommand):
 
             # Add the user's query
             self.add_context({"role": "user", "content": query}, tennant_id)
-            # And the system's response
             self.add_context(msg, tennant_id)
-
             bot.send_message(message.chat.id, gpt3_text)
         else:
             # Step 3, call the function
@@ -453,7 +451,17 @@ class Command(BaseCommand):
                 model="gpt-3.5-turbo-0613",
                 messages=final_messages,
             )
-            return second_response['choices'][0]['message']
+
+            gpt3_text = second_response['choices'][0]['message']['content']
+            # Setup if empty
+            if tennant_id not in self.previous_messages:
+                self.previous_messages[tennant_id] = []
+
+            self.add_context({"role": "user", "content": query}, tennant_id)
+            self.add_context(second_response['choices'][0]['message'], tennant_id)
+            bot.send_message(message.chat.id, gpt3_text)
+
+            return 
 
     def add_context(self, msg, tennant_id):
         if tennant_id not in self.previous_messages:
