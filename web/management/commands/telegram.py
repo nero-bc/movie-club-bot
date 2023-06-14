@@ -302,7 +302,7 @@ class Command(BaseCommand):
         elif text.startswith("/ada"):
             return ("text-ada-001", "/ada")
         elif text.startswith("/cage"):
-            return ("gpt-3.5-turbo", "/cage")
+            return ("gpt-3.5-turbo-0613", "/cage")
         else:
             return False
 
@@ -340,7 +340,7 @@ class Command(BaseCommand):
         messages = self.filter_for_size(messages)
 
         completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo", messages=messages
+            model="gpt-3.5-turbo-0613", messages=messages
         )
         msg = completion.to_dict()["choices"][0]["message"]
         gpt3_text = msg["content"]
@@ -385,7 +385,7 @@ class Command(BaseCommand):
         )
         messages = self.filter_for_size(messages)
         completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo", messages=messages
+            model="gpt-3.5-turbo-0613", messages=messages
         )
         msg = completion.to_dict()["choices"][0]["message"]
         gpt3_text = msg["content"]
@@ -490,7 +490,7 @@ class Command(BaseCommand):
 
             model, short = self.is_gpt3(message.text)
 
-            if model == "gpt-3.5-turbo":
+            if model.startswith("gpt-3.5-turbo"):
                 self.chatgpt(message.text[len(short) + 1 :], message, tennant_id)
             else:
                 response = openai.Completion.create(
