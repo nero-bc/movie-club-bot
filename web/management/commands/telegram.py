@@ -445,7 +445,8 @@ class Command(BaseCommand):
             # Add the user's query
             self.add_context({"role": "user", "content": query}, tennant_id)
             self.add_context(msg, tennant_id)
-            bot.send_message(message.chat.id, gpt3_text + f"\n\n{completion['usage']}")
+            u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}]"
+            bot.send_message(message.chat.id, gpt3_text + f"\n\n{u}")
         else:
             # Step 3, call the function
             fn = getattr(self, function)
@@ -478,7 +479,9 @@ class Command(BaseCommand):
 
             self.add_context({"role": "user", "content": query}, tennant_id)
             self.add_context(second_response['choices'][0]['message'], tennant_id)
-            bot.send_message(message.chat.id, gpt3_text + f"\n\n{completion['usage']}\n{second_response['usage']}")
+            u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}]"
+            u2 = f"[{second_response['usage']['prompt_tokens']}/{second_response['usage']['completion_tokens']}]"
+            bot.send_message(message.chat.id, gpt3_text + f"\n\n{u}\n{u2}")
 
             return 
 
