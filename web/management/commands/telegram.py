@@ -416,9 +416,11 @@ class Command(BaseCommand):
 
         messages = self.filter_for_size(messages)
 
+        c0 = time.time()
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0613", messages=messages, functions=self.discover()
         )
+        c1 = time.time()
         import pprint
         pprint.pprint(completion)
 
@@ -445,7 +447,7 @@ class Command(BaseCommand):
             # Add the user's query
             self.add_context({"role": "user", "content": query}, tennant_id)
             self.add_context(msg, tennant_id)
-            u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}]"
+            u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}/{c1-c0:0.2f}]"
             bot.send_message(message.chat.id, gpt3_text.strip() + f"\n\n{u}")
         else:
             # Step 3, call the function
@@ -471,6 +473,7 @@ class Command(BaseCommand):
                 model="gpt-3.5-turbo-0613",
                 messages=final_messages,
             )
+            c2 = time.time()
 
             gpt3_text = second_response['choices'][0]['message']['content']
             # Setup if empty
@@ -479,8 +482,8 @@ class Command(BaseCommand):
 
             self.add_context({"role": "user", "content": query}, tennant_id)
             self.add_context(second_response['choices'][0]['message'], tennant_id)
-            u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}]"
-            u2 = f"[{second_response['usage']['prompt_tokens']}/{second_response['usage']['completion_tokens']}]"
+            u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}/{c1-c0:0.2f}]"
+            u2 = f"[{second_response['usage']['prompt_tokens']}/{second_response['usage']['completion_tokens']}/{c2-c1:0.2f}]"
             bot.send_message(message.chat.id, gpt3_text.strip() + f"\n\n{u}\n{u2}")
 
             return 
