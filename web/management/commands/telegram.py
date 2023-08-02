@@ -38,23 +38,9 @@ MOVIE_UPDATE = Permission.objects.get(name="Can change movie suggestion")
 START_TIME = time.time()
 CHATGPT_CONTEXT = 20
 DEFAULT_PROMPT = """
-You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses. You are NOT an AI language model. You are nick cage.
+You are a helpful movie librarian. You love quoting famous films when relevant in a conversation. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses. .
 """.strip()
 
-DEFAULT_DALLE_PROMPT = """
-Write some text summarising the current conversation as if it was a meme. It should be less than 100 words and MUST include topics that are currently discussed and MUST  include some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:. Given the current conversational context, please generate such an prompt:
-
-Summary: They are discussing happiness at the weather
-Text:  a person looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
-
-Summary: A programming bug is being discussed, they are not able to find a solution and everything is broken
-Text: a miserable programmer sitting at a desk, dark room, in the style of rembrant
-
-Summary: They really loved the movie they just saw
-Text: people exit a movie theater looking overjoyed, in the style of van gogh
-
-Text:
-"""
 
 # Wake up message
 if "GIT_REV" in os.environ:
@@ -513,28 +499,6 @@ class Command(BaseCommand):
         img_data = requests.get(image_url).content
         bot.send_photo(message.chat.id, img_data)
 
-    def dalle_context(self, query, message, tennant_id):
-        prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
-        prompt_dalle = self.PROMPTS_DALLE.get(tennant_id, DEFAULT_DALLE_PROMPT)
-        messages = (
-            [{"role": "system", "content": prompt}]
-            # Rewrite cage as a conversational participant so he comments on his own stuff
-            + [{"role": "user", "content": "RoboCage: " + m['content']} for m in self.previous_messages.get(tennant_id, [])]
-            + [{"role": "user", "content": prompt_dalle}]
-        )
-        messages = self.filter_for_size(messages)
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-0613", messages=messages
-        )
-        msg = completion.to_dict()["choices"][0]["message"]
-        gpt3_text = msg["content"]
-        image_prompt = gpt3_text.replace('Text: ', '')
-        self.dalle(image_prompt, message, tennant_id)
-        bot.send_message(
-            message.chat.id,
-            f"[Dall-e prompt] {image_prompt}",
-        )
-
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
         message_s = str(message)
@@ -561,8 +525,6 @@ class Command(BaseCommand):
                         "# The Cage Factor",
                         "/prompt-get - see current prompt",
                         "/prompt-set - set current prompt",
-                        "/prompt-get-dalle - see current dalle prompt",
-                        "/prompt-set-dalle - set current dalle prompt",
                         "/dumpcontext - see current context",
                         "/dalle <prompt>",
                         "/chatty - Make cagebot more chatty",
@@ -616,8 +578,6 @@ class Command(BaseCommand):
             self.CHATTINESS[tennant_id] = self.CHATTINESS_ANNOYING
         elif message.text.startswith("/shush") or message.text.startswith("/shhhh"):
             self.CHATTINESS[tennant_id] = self.CHATTINESS_DEFAULT
-        elif message.text.startswith("/dallecontext"):
-            self.dalle_context(message.text, message, tennant_id)
         elif message.text.startswith("/dalle"):
             self.dalle(message.text[len('/dalle') + 1 :], message, tennant_id)
         elif message.text.startswith("/error"):
@@ -677,15 +637,11 @@ class Command(BaseCommand):
             #            tennant_id
             #        )
             # else:
-            (cx, cy) = self.CHATTINESS.get(tennant_id, self.CHATTINESS_DEFAULT)
+            (cx, _) = self.CHATTINESS.get(tennant_id, self.CHATTINESS_DEFAULT)
             if random.random() < cx or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.chatgpt(message.text, message, tennant_id)
-            elif random.random() < cy or (
-                message.chat.type == "private" and not message.from_user.is_bot
-            ):
-                self.dalle_context(message.text, message, tennant_id)
 
     def prompt_get(self, message):
         tennant_id = str(message.chat.id)
@@ -697,17 +653,6 @@ class Command(BaseCommand):
         if len(message.text) > 20:
             self.PROMPTS[tennant_id] = message.text
             bot.reply_to(message, "OK, recorded")
-
-    def prompt_get_dalle(self, message):
-        tennant_id = str(message.chat.id)
-        prompt = self.PROMPTS_DALLE.get(tennant_id, DEFAULT_DALLE_PROMPT)
-        bot.reply_to(message, f"The current dalle prompt is: {prompt}")
-
-    def prompt_set_dalle(self, message):
-        tennant_id = str(message.chat.id)
-        if len(message.text) > 20:
-            self.PROMPTS_DALLE[tennant_id] = message.text
-            bot.reply_to(message, "OK, recorded dalle prompt")
 
     def dumpcontext(self, message):
         tennant_id = str(message.chat.id)
