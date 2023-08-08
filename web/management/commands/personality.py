@@ -169,7 +169,7 @@ class PersonalityBot:
         # Add the user's query
         self.cm.add_context(self.name, gpt3_text, tennant_id, role="assistant")
         u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}/{c1-c0:0.2f}s]"
-        bot.reply_to(message, gpt3_text + f"\n\n{u}")
+        bot.reply_to(message, f"{self.name}: {gpt3_text}\n\n{u}")
 
     def dalle(self, query, message, tennant_id):
         response = openai.Image.create(prompt=query, n=1, size="512x512")
@@ -226,7 +226,7 @@ class DissociativeIdentityDisorder:
         self.cage = PersonalityBot(bot_connection, 'Cage', cm)
         self.barbie = PersonalityBot(bot_connection, 'Barbie', cm)
 
-    def process_message(self, msg):
+    def process_message(self, message):
         self.cage.command_dispatch(message)
         self.barbie.command_dispatch(message)
 
