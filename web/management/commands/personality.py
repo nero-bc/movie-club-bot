@@ -169,7 +169,7 @@ class PersonalityBot:
         # Add the user's query
         self.cm.add_context(self.name, gpt3_text, tennant_id, role="assistant")
         u = f"[{completion['usage']['prompt_tokens']}/{completion['usage']['completion_tokens']}/{c1-c0:0.2f}s]"
-        bot.reply_to(message, f"{self.name}: {gpt3_text}\n\n{u}")
+        self.bot.reply_to(message, f"{self.name}: {gpt3_text}\n\n{u}")
 
     def dalle(self, query, message, tennant_id):
         response = openai.Image.create(prompt=query, n=1, size="512x512")
@@ -177,7 +177,7 @@ class PersonalityBot:
         zz = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         zz.close()
         img_data = requests.get(image_url).content
-        bot.send_photo(message.chat.id, img_data, caption=f"[Dall-e prompt] {query}")
+        self.bot.send_photo(message.chat.id, img_data, caption=f"[Dall-e prompt] {query}")
 
     def dalle_context(self, query, message, tennant_id):
         prompt = self.DEFAULT_PROMPT
