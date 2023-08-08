@@ -221,10 +221,10 @@ class PersonalityBot:
 
 
 class DissociativeIdentityDisorder:
-    def __init__(self):
+    def __init__(self, bot_connection):
         cm = ContextManager()
-        cage = PersonalityBot(bot, 'Cage', cm)
-        barbie = PersonalityBot(bot, 'Barbie', cm)
+        cage = PersonalityBot(bot_connection, 'Cage', cm)
+        barbie = PersonalityBot(bot_connection, 'Barbie', cm)
 
     def process_message(self, msg):
         cage.command_dispatch(message)

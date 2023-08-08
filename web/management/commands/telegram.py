@@ -768,7 +768,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def handle_messages(messages):
 
-            personality_bots = DissociativeIdentityDisorder()
+            personality_bots = DissociativeIdentityDisorder(bot)
             for message in messages:
                 # Skip non-text messages
                 if message.text is None:
