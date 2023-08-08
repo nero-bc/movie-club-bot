@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 import traceback
 from django.contrib.auth.models import Permission
+from .personality import DissociativeIdentityDisorder
 import uuid
 
 from web.models import (
@@ -766,6 +767,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         def handle_messages(messages):
+
+            personality_bots = DissociativeIdentityDisorder()
             for message in messages:
                 # Skip non-text messages
                 if message.text is None:
@@ -773,6 +776,15 @@ class Command(BaseCommand):
 
                 try:
                     self.command_dispatch(message)
+                except Exception as e:
+                    capture_exception(e)
+                    bot.send_message(
+                        message.chat.id,
+                        f"⚠️ reported to sentry",
+                    )
+
+                try:
+                    personality_bots.process_message(message)
                 except Exception as e:
                     capture_exception(e)
                     bot.send_message(
