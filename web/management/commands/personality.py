@@ -113,7 +113,7 @@ class ContextManager:
 
         self.previous_messages[tennant_id].append({
             "role": role,
-            "name": re.sub(r'[^A-Za-z0-9_-]', '', name)
+            "name": re.sub(r'[^A-Za-z0-9_-]', '', name),
             "content": msg
         })
         if len(self.previous_messages[tennant_id]) > CHATGPT_CONTEXT:
