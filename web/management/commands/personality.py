@@ -198,15 +198,6 @@ class PersonalityBot:
 
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
-        message_s = str(message)
-        role = "user" if not message.from_user.is_bot else "assistant"
-
-        self.cm.add_context(
-            message.from_user.first_name,
-            message.text,
-            tennant_id,
-            role=role,
-        )
 
         if 'DALL·E' in message.text:
             self.dalle_context(message.text, message, tennant_id)
@@ -227,6 +218,17 @@ class DissociativeIdentityDisorder:
         self.barbie = PersonalityBot(bot_connection, 'Barbie', cm)
 
     def process_message(self, message):
+        tennant_id = str(message.chat.id)
+        message_s = str(message)
+        role = "user" if not message.from_user.is_bot else "assistant"
+
+        self.cm.add_context(
+            message.from_user.first_name,
+            message.text,
+            tennant_id,
+            role=role,
+        )
+
         self.cage.command_dispatch(message)
         self.barbie.command_dispatch(message)
 
