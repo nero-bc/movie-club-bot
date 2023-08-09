@@ -177,7 +177,7 @@ class PersonalityBot:
         zz = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         zz.close()
         img_data = requests.get(image_url).content
-        self.bot.send_photo(message.chat.id, img_data, caption=f"[Dall-e prompt] {query}")
+        self.bot.send_photo(message.chat.id, img_data, caption=f"[{self.name} Dall-e prompt] {query}")
 
     def dalle_context(self, query, message, tennant_id):
         prompt = self.DEFAULT_PROMPT
