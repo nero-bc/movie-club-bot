@@ -13,6 +13,3 @@ Done
 - vote on films, record reactjis
 - generating better passwords (D:), giving them to the users via DMs only.
 - staff permission
-
-
-
