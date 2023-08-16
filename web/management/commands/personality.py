@@ -201,12 +201,14 @@ class PersonalityBot:
         message_s = str(message)
         role = "user" if not message.from_user.is_bot else "assistant"
 
-        self.cm.add_context(
-            message.from_user.first_name,
-            message.text,
-            tennant_id,
-            role=role,
-        )
+        # Only do it once
+        if self.name == 'Cage':
+            self.cm.add_context(
+                message.from_user.first_name,
+                message.text,
+                tennant_id,
+                role=role,
+            )
 
         if 'DALL·E' in message.text:
             self.dalle_context(message.text, message, tennant_id)
