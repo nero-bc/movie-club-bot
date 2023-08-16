@@ -225,6 +225,13 @@ class MovieSuggestion(models.Model):
         except:
             g_s = ""
 
+        json_movie_details = json.dumps(movie_details)
+        cagefactor = False
+        if 'nm0000115/' in json_movie_details:
+            cagefactor = True
+        elif 'Nicholas Cage' in json_movie_details:
+            cagefactor = True
+
         movie = cls(
             # IMDB Metadata
             imdb_id=imdb_id,
@@ -235,13 +242,15 @@ class MovieSuggestion(models.Model):
             ratings=rc_s,
             runtime=r_s,
             genre=g_s,
-            meta=json.dumps(movie_details),
+            meta=json_movie_details,
             # This is new
             status=0,
             suggested_by=None,
             # expressed_interest=[],
             added=now(),
         )
+        # movie.save()
+        # movie.buffs.add(Buffs.....)
         time.sleep(2 + random.random())
         return movie
 
