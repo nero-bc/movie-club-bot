@@ -825,6 +825,10 @@ class Command(BaseCommand):
                         f"⚠️ reported to sentry",
                     )
 
+                # Ignore commands
+                if message.text.startswith('/'):
+                    continue
+
                 try:
                     personality_bots.process_message(message)
                 except Exception as e:
