@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from dataclasses import dataclass
 import psutil
 from sentry_sdk import capture_exception
 import time
@@ -54,6 +55,32 @@ else:
 
 bot.send_message(195671723, f"Hey hexy I'm re-deployed, now running {COMMIT_URL}")
 #bot.send_message(-627602564, f"Hey y'all I'm back!")
+
+@dataclass
+class TimedFact:
+    fact: str
+    expires: float = 0
+
+    def is_expired(self):
+        if self.expires == 0:
+            return False
+        if self.expires < time.time():
+            return True
+        return False
+
+class TimedFactManager:
+    def __init__(self):
+        self.facts = []
+
+    def add_fact(self, fact, expires=None):
+        self.facts.append(TimedFact(fact, expires or 0))
+
+    def get_facts(self):
+        self.facts = [
+            x for x in self.facts
+            if not x.is_expired()
+        ]
+        return [x.fact for x in self.facts] + ["Current date: " + datetime.datetime.today().strftime("%Y-%m-%d")]
 
 
 # Poll Handling
@@ -148,6 +175,7 @@ class Command(BaseCommand):
     CHATTINESS_DEFAULT = (0.025, 0.025)
     CHATTINESS_ANNOYING = (0.7, 0.1)
     CHATTINESS = {}
+    tfm = TimedFactManager()
 
     def discover(self):
         TYPES = {
@@ -409,6 +437,8 @@ class Command(BaseCommand):
 
     def chatgpt(self, query, message, tennant_id):
         prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
+        prompt += "\nFacts:\n" + "\n".join(self.tfm.get_facts())
+
         messages = (
             [{"role": "system", "content": prompt}]
             + self.previous_messages.get(tennant_id, [])
@@ -541,6 +571,7 @@ class Command(BaseCommand):
                         "/chatty - Make cagebot more chatty",
                         "/shush - Tell him to shush",
                         "/error - Trigger an error intentionally",
+                        "/fact <text> <minutes> - add a fact for some minutes, last value must parse as an integer.",
                     ]
                 ),
             )
@@ -557,6 +588,14 @@ class Command(BaseCommand):
             bot.reply_to(message, loc)
         elif message.text.startswith("/passwd"):
             self.change_password(message)
+        elif message.text.startswith("/fact"):
+            parts = message.text.split(" ")
+            try:
+                minutes = int(parts[-1])
+                factoid = " ".join(parts[1:-1])
+                self.tfm.add_fact(factoid, time.time() + minutes)
+            except:
+                bot.send_message("Not recorded, failure.")
         elif message.text.startswith("/countdown"):
             self.log(tennant_id, "countdown", message.text.split())
             self.countdown(message.chat.id, message.text.split())
