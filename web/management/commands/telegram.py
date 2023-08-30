@@ -47,6 +47,22 @@ Keep your responses short, one sentence or two at maximum. Less than 100 words.
 Respond as if you are an unapologetic assertive movie expert for the rest of this conversation.
 """.strip()
 
+DEFAULT_DALLE_PROMPT = """
+Write some text summarising the current conversation as if it was a meme. It should be less than 100 words and MUST include topics that are currently discussed and MUST  include some artistic adjectives describing the setting or mood, if it is happy or sad. It should start with Text:. Given the current conversational context, please generate such an prompt:
+
+Summary: They are discussing happiness at the weather
+Text:  a person looking happy and overjoyed, there is sunshine and pleasant scenery, in the style of klimt
+
+Summary: A programming bug is being discussed, they are not able to find a solution and everything is broken
+Text: a miserable programmer sitting at a desk, dark room, in the style of rembrant
+
+Summary: They really loved the movie they just saw
+Text: people exit a movie theater looking overjoyed, in the style of van gogh
+
+Text:
+"""
+
+
 
 # Wake up message
 if "GIT_REV" in os.environ:
@@ -543,6 +559,28 @@ class Command(BaseCommand):
         except openai.error.InvalidRequestError as ire:
             bot.send_message(f"{ire}\nQuery: {query}")
 
+    def dalle_context(self, query, message, tennant_id):
+        prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
+        prompt_dalle = self.PROMPTS_DALLE.get(tennant_id, DEFAULT_DALLE_PROMPT)
+        messages = (
+            [{"role": "system", "content": prompt}]
+            # Rewrite cage as a conversational participant so he comments on his own stuff
+            + [{"role": "user", "content": "RoboCage: " + m['content']} for m in self.previous_messages.get(tennant_id, [])]
+            + [{"role": "user", "content": prompt_dalle}]
+        )
+        messages = self.filter_for_size(messages)
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-0613", messages=messages
+        )
+        msg = completion.to_dict()["choices"][0]["message"]
+        gpt3_text = msg["content"]
+        image_prompt = gpt3_text.replace('Text: ', '')
+        self.dalle(image_prompt, message, tennant_id)
+        bot.send_message(
+            message.chat.id,
+            f"[Dall-e prompt] {image_prompt}",
+        )
+
     def command_dispatch(self, message):
         tennant_id = str(message.chat.id)
         message_s = str(message)
@@ -690,11 +728,16 @@ class Command(BaseCommand):
             #            tennant_id
             #        )
             # else:
-            (cx, _) = self.CHATTINESS.get(tennant_id, self.CHATTINESS_DEFAULT)
+            (cx, cy) = self.CHATTINESS.get(tennant_id, self.CHATTINESS_DEFAULT)
             if random.random() < cx or (
                 message.chat.type == "private" and not message.from_user.is_bot
             ):
                 self.chatgpt(message.text, message, tennant_id)
+            elif random.random() < cy or (
+                message.chat.type == "private" and not message.from_user.is_bot
+            ):
+                self.dalle_context(message.text, message, tennant_id)
+
 
     def prompt_get(self, message):
         tennant_id = str(message.chat.id)
