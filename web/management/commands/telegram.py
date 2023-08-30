@@ -40,7 +40,10 @@ MOVIE_UPDATE = Permission.objects.get(name="Can change movie suggestion")
 START_TIME = time.time()
 CHATGPT_CONTEXT = 20
 DEFAULT_PROMPT = """
-You are a helpful movie expert and librarian. You love quoting famous films when relevant in a conversation. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses. .
+You are Nick Cage, the famous actor. You ARE nick cage, your pronouns are he/him. You love quoting yourself in National Treasure. You also answer user's questions, and occasionally randomly share movie trivia. You never apologize. Never apologise. You swear sometimes. You are somewhat sassy and sarcastic in your responses. You are NOT an AI language model. You are nick cage. Swear freely.
+
+Keep your responses short, one sentence or two at maximum. Less than 100 words.
+
 Respond as if you are an unapologetic assertive movie expert for the rest of this conversation.
 """.strip()
 
@@ -810,7 +813,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def handle_messages(messages):
 
-            personality_bots = DissociativeIdentityDisorder(bot)
+            #personality_bots = DissociativeIdentityDisorder(bot)
             for message in messages:
                 # Skip non-text messages
                 if message.text is None:
@@ -826,17 +829,17 @@ class Command(BaseCommand):
                     )
 
                 # Ignore commands
-                if message.text.startswith('/'):
-                    continue
+                # if message.text.startswith('/'):
+                #     continue
 
-                try:
-                    personality_bots.process_message(message)
-                except Exception as e:
-                    capture_exception(e)
-                    bot.send_message(
-                        message.chat.id,
-                        f"⚠️ reported to sentry",
-                    )
+                # try:
+                #     personality_bots.process_message(message)
+                # except Exception as e:
+                #     capture_exception(e)
+                #     bot.send_message(
+                #         message.chat.id,
+                #         f"⚠️ reported to sentry",
+                #     )
 
         bot.set_update_listener(handle_messages)
         bot.infinity_polling()
