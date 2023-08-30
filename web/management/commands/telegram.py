@@ -555,7 +555,10 @@ class Command(BaseCommand):
             img_data = requests.get(image_url).content
             bot.send_photo(message.chat.id, img_data)
         except openai.error.InvalidRequestError as ire:
-            bot.send_message(f"{ire}\nQuery: {query}")
+            bot.send_message(
+                message.chat.id,
+                f"{ire}\nQuery: {query}"
+            )
 
     def dalle_context(self, query, message, tennant_id):
         prompt = self.PROMPTS.get(tennant_id, DEFAULT_PROMPT)
