@@ -365,10 +365,14 @@ class Command(BaseCommand):
             try:
                 movie = MovieSuggestion.objects.get(tennant_id=tennant_id, imdb_id=m)
                 movie_details = json.loads(movie.meta)
-           
+
                 resp = f"Suggested by {movie.suggested_by} on {movie.added.strftime('%B %m, %Y')}\nVotes: "
                 for v in movie.interest_set.all():
                     resp += f"{v.score_e}"
+
+                if movie.status == 1:
+                    resp += f"\nWatched on {movie.status_changed_date}"
+                    resp += f"\nRating: {movie.get_rating}"
 
                 self.add_context(
                     {
